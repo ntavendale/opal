@@ -3,19 +3,6 @@ program APMUnitTests;
 {$APPTYPE CONSOLE}
 {$ENDIF}{$STRONGLINKTYPES ON}
 uses
-  {$IFDEF EurekaLog}
-  EMemLeaks,
-  EResLeaks,
-  ESendAPIFogBugz,
-  EDialogWinAPIMSClassic,
-  EDialogWinAPIEurekaLogDetailed,
-  EDialogWinAPIStepsToReproduce,
-  EDebugExports,
-  EDebugJCL,
-  EMapWin32,
-  EAppVCL,
-  ExceptionLog7,
-  {$ENDIF EurekaLog}
   SysUtils,
   {$IFDEF TESTINSIGHT}
   TestInsight.DUnitX,
@@ -80,6 +67,8 @@ begin
       System.Writeln(E.ClassName, ': ', E.Message);
   end;
 end.
+
+
 
 
 
