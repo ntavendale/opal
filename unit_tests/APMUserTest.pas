@@ -20,7 +20,6 @@ uses
   DefaultInstances;
 
 type
-
   [TestFixture]
   TAPMUserTest = class(TObject)
   public

@@ -16,7 +16,8 @@ unit DefaultInstances;
 interface
 
 uses
-  System.SysUtils, System.Classes, System.JSON, DUnitX.TestFramework, APM.Metadata;
+  System.SysUtils, System.Classes, System.JSON, DUnitX.TestFramework, APM.Metadata,
+  APM.Transaction;
 
 type
   TDefaultInstances = class
@@ -30,6 +31,7 @@ type
     class function CreateDefaultAPMRuntime: TAPMRuntime;
     class function CreateDefaultAPMService: TAPMService;
     class function CreateDefaultAPMMetadata: TAPMMetadata;
+    class function CreateDefaultAPMTransaction: TAPMTransaction;
   end;
 
 implementation
@@ -136,6 +138,20 @@ begin
   Result.User.ID := '52A028B4-7A84-4E5B-A6D8-9696F169A54E';
   Result.User.Email := 'me@here.com';
   Result.User.UserName := 'DOMAIN\UserName';
+end;
+
+class function TDefaultInstances.CreateDefaultAPMTransaction: TAPMTransaction;
+begin
+  //ES Documentation sample (https://www.elastic.co/guide/en/apm/server/current/example-intakev2-events.html)
+  //{ "transaction": { "trace_id": "01234567890123456789abcdefabcdef", "id": "abcdef1478523690", "type": "request", "duration": 32.592981, "timestamp": 1535655207154000, "result": "200", "context": null, "spans": null, "sampled": null, "span_count": { "started": 0 }}}
+  Result := TAPMTransaction.Create;
+  Result.TraceID := '01234567890123456789abcdefabcdef';
+  Result.ID := 'abcdef1478523690';
+  Result.TxType := 'request';
+  Result.Duration := 32.592981;
+  Result.TxResult := '200';
+  Result.Timestamp := 1535655207154000;
+  Result.SpanCount.Started := 0;
 end;
 
 end.
