@@ -19,17 +19,17 @@
 *OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE *
 *SOFTWARE.                                                                     *
 *******************************************************************************)
-unit APMUserTest;
+unit APMLogTest;
 
 interface
 
 uses
-  System.SysUtils, System.Classes, System.JSON, DUnitX.TestFramework, APM.Metadata,
+  System.SysUtils, System.Classes, System.JSON, DUnitX.TestFramework, APM.Error,
   DefaultInstances;
 
 type
   [TestFixture]
-  TAPMUserTest = class(TObject)
+  TAPMLogTest = class(TObject)
   public
     [Test]
     procedure ConstructorTest;
@@ -43,31 +43,38 @@ type
 
 implementation
 
-procedure TAPMUserTest.ConstructorTest;
+procedure TAPMLogTest.ConstructorTest;
 var
-  LActual: TAPMUser;
+  LActual: TAPMLog;
 begin
-  LActual := TAPMUser.Create;
+  LActual := TAPMLog.Create;
   try
-    Assert.AreEqual(String.Empty, LActual.ID);
-    Assert.AreEqual(String.Empty, LActual.Email);
-    Assert.AreEqual(String.Empty, LActual.UserName);
+    Assert.AreEqual(String.Empty, LActual.Level);
+    Assert.AreEqual(String.Empty, LActual.LoggerName);
+    Assert.AreEqual(String.Empty, LActual.LogMessage);
+    Assert.AreEqual(String.Empty, LActual.ParamMessage);
+    Assert.AreEqual(0, LActual.StackTrace.Count);
   finally
     LActual.Free;
   end;
 end;
 
-procedure TAPMUserTest.CopyConstructorTest;
+procedure TAPMLogTest.CopyConstructorTest;
 var
-  LExpected, LActual: TAPMUser;
+  LExpected, LActual: TAPMLog;
+  i: Integer;
 begin
-  LExpected := TDefaultInstances.CreateDefaultAPMUser;
+  LExpected := TDefaultInstances.CreateDefaultAPMLog;
   try
-    LActual := TAPMUser.Create(LExpected);
+    LActual := TAPMLog.Create(LExpected);
     try
-      Assert.AreEqual(LExpected.ID, LActual.ID);
-      Assert.AreEqual(LExpected.Email, LActual.Email);
-      Assert.AreEqual(LExpected.UserName, LActual.UserName);
+      Assert.AreEqual(LExpected.Level, LActual.Level);
+      Assert.AreEqual(LExpected.LogMessage, LActual.LogMessage);
+      Assert.AreEqual(LExpected.ParamMessage, LActual.ParamMessage);
+      Assert.AreEqual(LExpected.LoggerName, LActual.LoggerName);
+      Assert.AreEqual(LExpected.StackTrace.Count, LActual.StackTrace.Count);
+      for i := 0 to LExpected.StackTrace.Count - 1 do
+        Assert.AreEqual(LExpected.StackTrace[i], LActual.StackTrace[i]);
     finally
       LActual.Free;
     end;
@@ -76,21 +83,29 @@ begin
   end;
 end;
 
-procedure TAPMUserTest.JSONObjectTest;
+procedure TAPMLogTest.JSONObjectTest;
 var
-  LExpected: TAPMUser;
+  LExpected: TAPMLog;
   LActual: TJSONObject;
+  LStackTrace: TJSONArray;
+  LValue: TJSONValue;
 begin
-  LExpected := TDefaultInstances.CreateDefaultAPMUser;
+  LExpected := TDefaultInstances.CreateDefaultAPMLog;
   try
     LActual := LExpected.GetJSONObject;
     try
-      Assert.IsNotNull(LActual.Values['id']);
-      Assert.AreEqual(LExpected.ID, LActual.Values['id'].Value);
-      Assert.IsNotNull(LActual.Values['email']);
-      Assert.AreEqual(LExpected.Email, LActual.Values['email'].Value);
-      Assert.IsNotNull(LActual.Values['username']);
-      Assert.AreEqual(LExpected.UserName, LActual.Values['username'].Value);
+      Assert.IsNotNull(LActual.Values['level']);
+      Assert.AreEqual(LExpected.Level, LActual.Values['level'].Value);
+      Assert.IsNotNull(LActual.Values['logger_name']);
+      Assert.AreEqual(LExpected.LoggerName, LActual.Values['logger_name'].Value);
+      Assert.IsNotNull(LActual.Values['message']);
+      Assert.AreEqual(LExpected.LogMessage, LActual.Values['message'].Value);
+      Assert.IsNotNull(LActual.Values['param_message']);
+      Assert.AreEqual(LExpected.ParamMessage, LActual.Values['param_message'].Value);
+      LStackTrace := LActual.Values['stacktrace'] as TJSONArray;
+      Assert.IsNotNull(LStackTrace);
+      for LValue in LStackTrace do
+        Assert.Contains(['StackTrace Line 1', 'StackTrace Line 2'], LValue.Value);
     finally
       LActual.Free;
     end;
@@ -99,21 +114,22 @@ begin
   end;
 end;
 
-procedure TAPMUserTest.JSONStringTest;
+procedure TAPMLogTest.JSONStringTest;
 var
-  LUser: TAPMUser;
+  LLog: TAPMLog;
   LExpected, LActual: String;
 begin
-  LExpected := '{"id":"52A028B4-7A84-4E5B-A6D8-9696F169A54E","email":"me@here.com","username":"DOMAIN\\UserName"}';
-  LUser := TDefaultInstances.CreateDefaultAPMUser;
+  LExpected := '{"level":"DEBUG","logger_name":"File Loger","message":"Access Denied","param_message":"Test Module","stacktrace":["StackTrace Line 1","StackTrace Line 2"]}';
+  LLog := TDefaultInstances.CreateDefaultAPMLog;
   try
-    LActual := LUser.GetJSONString;
+    LActual := LLog.GetJSONString;
   finally
-    LUser.Free;
+    LLog.Free;
   end;
   Assert.AreEqual(LExpected, LActual);
 end;
 
 initialization
-  TDUnitX.RegisterTestFixture(TAPMUserTest);
+  TDUnitX.RegisterTestFixture(TAPMLogTest);
 end.
+

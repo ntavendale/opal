@@ -35,7 +35,10 @@ uses
   APMServiceTest in 'APMServiceTest.pas',
   APMMetadataTest in 'APMMetadataTest.pas',
   APM.Transaction in '..\apm_client\APM.Transaction.pas',
-  APMTransactionTest in 'APMTransactionTest.pas';
+  APMTransactionTest in 'APMTransactionTest.pas',
+  APM.Error in '..\apm_client\APM.Error.pas',
+  APMExceptionTest in 'APMExceptionTest.pas',
+  APMLogTest in 'APMLogTest.pas';
 
 var
   runner : ITestRunner;

@@ -1,23 +1,31 @@
-//Copyright 2018 Oamaru Group Inc.
-//
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
-//limitations under the License.
+(*******************************************************************************
+*                      Copyright 2018 Oamaru Group Inc.                        *
+*                                                                              *
+*Permission is hereby granted, free of charge, to any person obtaining a copy  *
+*of this software and associated documentation files (the "Software"), to deal *
+*in the Software without restriction, including without limitation the rights  *
+*to use, copy, modify, merge, publish, distribute, sublicense, and/or sell     *
+*copies of the Software, and to permit persons to whom the Software is         *
+*furnished to do so, subject to the following conditions:                      *
+*                                                                              *
+*The above copyright notice and this permission notice shall be included in all*
+*copies or substantial portions of the Software.                               *
+*                                                                              *
+*THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR    *
+*IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,      *
+*FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE   *
+*AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER        *
+*LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, *
+*OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE *
+*SOFTWARE.                                                                     *
+*******************************************************************************)
 unit DefaultInstances;
 
 interface
 
 uses
   System.SysUtils, System.Classes, System.JSON, DUnitX.TestFramework, APM.Metadata,
-  APM.Transaction;
+  APM.Transaction, APM.Error;
 
 type
   TDefaultInstances = class
@@ -32,6 +40,8 @@ type
     class function CreateDefaultAPMService: TAPMService;
     class function CreateDefaultAPMMetadata: TAPMMetadata;
     class function CreateDefaultAPMTransaction: TAPMTransaction;
+    class function CreateDefaultAPMException: TAPMException;
+    class function CreateDefaultAPMLog: TAPMLog;
   end;
 
 implementation
@@ -152,6 +162,31 @@ begin
   Result.TxResult := '200';
   Result.Timestamp := 1535655207154000;
   Result.SpanCount.Started := 0;
+end;
+
+class function TDefaultInstances.CreateDefaultAPMException: TAPMException;
+begin
+  //{"code":"5","message":"Access Denied","module":"Test Module","stacktrace":["StackTrace Line 1","StackTrace Line 2"],"type":"EAccessDenied","handled":true}
+  Result := TAPMException.Create;
+  Result.Code := '5';
+  Result.ExceptionMessage := 'Access Denied';
+  Result.Module := 'Test Module';
+  Result.StackTrace.Add('StackTrace Line 1');
+  Result.StackTrace.Add('StackTrace Line 2');
+  Result.ExceptionType := 'EAccessDenied';
+  Result.Handled := TRUE;
+end;
+
+class function TDefaultInstances.CreateDefaultAPMLog: TAPMLog;
+begin
+  //{"level":"DEBUG","logger_name":"File Loger","message":"Access Denied","param_message":"Test Module","stacktrace":["StackTrace Line 1","StackTrace Line 2"]}
+  Result := TAPMLog.Create;
+  Result.Level := 'DEBUG';
+  Result.LoggerName := 'File Loger';
+  Result.LogMessage := 'Access Denied';
+  Result.ParamMessage := 'Test Module';
+  Result.StackTrace.Add('StackTrace Line 1');
+  Result.StackTrace.Add('StackTrace Line 2');
 end;
 
 end.
