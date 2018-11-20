@@ -42,6 +42,8 @@ type
     class function CreateDefaultAPMTransaction: TAPMTransaction;
     class function CreateDefaultAPMException: TAPMException;
     class function CreateDefaultAPMLog: TAPMLog;
+    class function CreateSampleAPMError: TAPMError;
+    class function CreateDefaultAPMError: TAPMError;
   end;
 
 implementation
@@ -187,6 +189,42 @@ begin
   Result.ParamMessage := 'Test Module';
   Result.StackTrace.Add('StackTrace Line 1');
   Result.StackTrace.Add('StackTrace Line 2');
+end;
+
+class function TDefaultInstances.CreateSampleAPMError: TAPMError;
+begin
+  //use sample from documentation sample request body: https://www.elastic.co/guide/en/apm/server/current/example-intakev2-events.html
+  //{"id":"abcdef0123456789","timestamp":1533827,"log":{"level":"custom log level","message":"Cannot read property 'baz' of undefined"}}
+  Result := TAPMError.Create;
+  Result.ID := 'abcdef0123456789';
+  Result.TimeStamp := 1533827;
+  Result.Log.Level := 'custom log level';
+  Result.Log.LogMessage := 'Cannot read property ''baz'' of undefined';
+end;
+
+class function TDefaultInstances.CreateDefaultAPMError: TAPMError;
+begin
+  //{"id":"abcdef0123456789","timestamp":1533827,"trace_id":"01234","transaction_id":"56789","parent_id":"abcdef","exception":{"code":"5","message":"Access Denied","module":"Test Module","stacktrace":["StackTrace Line 1","StackTrace Line 2"],"type":"EAccessDenied","handled":true},"log":{"level":"DEBUG","logger_name":"File Loger","message":"Access Denied","param_message":"Test Module","stacktrace":["StackTrace Line 1","StackTrace Line 2"]}}
+  Result := TAPMError.Create;
+  Result.ID := 'abcdef0123456789';
+  Result.TimeStamp := 1533827;
+  Result.TraceID := '01234';
+  Result.TransactionID := '56789';
+  Result.ParentID := 'abcdef';
+  Result.Culprit := 'Sending Socket';
+  Result.Exception.Code := '5';
+  Result.Exception.ExceptionMessage := 'Access Denied';
+  Result.Exception.Module := 'Test Module';
+  Result.Exception.StackTrace.Add('StackTrace Line 1');
+  Result.Exception.StackTrace.Add('StackTrace Line 2');
+  Result.Exception.ExceptionType := 'EAccessDenied';
+  Result.Exception.Handled := TRUE;
+  Result.Log.Level := 'DEBUG';
+  Result.Log.LoggerName := 'File Loger';
+  Result.Log.LogMessage := 'Access Denied';
+  Result.Log.ParamMessage := 'Test Module';
+  Result.Log.StackTrace.Add('StackTrace Line 1');
+  Result.Log.StackTrace.Add('StackTrace Line 2');
 end;
 
 end.

@@ -30,7 +30,6 @@ uses
 //Example: https://www.elastic.co/guide/en/apm/server/current/example-intakev2-events.html
 //{"error":{"id":"abcdef0123456789","timestamp":1533827045999000,"log":{"level":"custom log level","message":"Cannot read property 'baz' of undefined"}}}
 
-//TraceID, TransactionID & ParentID are all or none. i.e.All must be set or none should be set.
 type
   TAPMException = class
   protected
@@ -74,10 +73,11 @@ type
     property StackTrace: TList<String> read FStackTrace;
   end;
 
+  //TraceID, TransactionID & ParentID are all or none. i.e.All must be set or none should be set.
   TAPMError = class
   protected
     FID: String;
-    FTimeStamp: UINT64;
+    FTimeStamp: UINT64; //Does not appear in documentation but shows up in sample request body (https://www.elastic.co/guide/en/apm/server/current/example-intakev2-events.html)
     FTraceID: String;
     FTransactionID: String;
     FParentID: String;
@@ -88,6 +88,8 @@ type
     constructor Create; overload;
     constructor Create(AAPMError: TAPMError); overload;
     destructor Destroy; override;
+    function GetJSONObject: TJSONObject;
+    function GetJSONString: String;
     property ID: String read FID write FID;
     property TimeStamp: UInt64 read FTimeStamp write FTimeStamp;
     property TraceID: String read FTraceID write FTraceID;
@@ -261,6 +263,40 @@ begin
   FLog.Free;
   FException.Free;
   inherited Destroy;
+end;
+
+function TAPMError.GetJSONObject: TJSONObject;
+var
+  LStackTrace: TJSONArray;
+  LTrace: String;
+begin
+  Result := TJSONObject.Create;
+  Result.AddPair('id', FID);
+  Result.AddPair('timestamp', TJSONNUmber.Create(FTimestamp));
+  Result.AddPair('trace_id', FTraceID);
+  Result.AddPair('transaction_id', FTransactionID);
+  Result.AddPair('parent_id', FParentID);
+  Result.AddPair('culprit', FCulprit);
+  if (not String.IsNullOrWhitespace(FException.ExceptionType)) or (not String.IsNullOrWhitespace(FException.ExceptionMessage)) then
+  begin
+    Result.AddPair('exception', FException.GetJSONObject);
+  end;
+  if not String.IsNullOrWhitespace(FLog.LogMessage) then
+  begin
+    Result.AddPair('log', FLog.GetJSONObject);
+  end;
+end;
+
+function TAPMError.GetJSONString: String;
+var
+  LObj: TJSONObject;
+begin
+  LObj := Self.GetJSONObject;
+  try
+    Result := LObj.ToJSON;
+  finally
+    LObj.Free;
+  end;
 end;
 {$ENDREGION}
 

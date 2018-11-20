@@ -38,7 +38,8 @@ uses
   APMTransactionTest in 'APMTransactionTest.pas',
   APM.Error in '..\apm_client\APM.Error.pas',
   APMExceptionTest in 'APMExceptionTest.pas',
-  APMLogTest in 'APMLogTest.pas';
+  APMLogTest in 'APMLogTest.pas',
+  APMErrorTest in 'APMErrorTest.pas';
 
 var
   runner : ITestRunner;
