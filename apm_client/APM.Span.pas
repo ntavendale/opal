@@ -77,6 +77,38 @@ type
     property httpContext: TAPMhttpContext read Fhttp;
   end;
 
+  TAPMSpan = class
+  protected
+    FID: String;
+    FTraceID: String;
+    FTransactionID: String;
+    FParentID: String;
+    FParent: Integer;
+    FName: String;
+    FType: String;
+    FStart: Double;
+    FDuration: Double;
+    FStackTrace: TList<String>;
+    FContext: TAPMContext;
+  public
+    constructor Create; overload;
+    constructor Create(AAPMSpan: TAPMSpan); overload;
+    destructor Destroy; override;
+    function GetJSONObject: TJSONObject;
+    function GetJSONString: String;
+    property ID: String read FID write FID;
+    property TraceID: String read FTraceID write FTraceID;
+    property TransactionID: String read FTransactionID write FTransactionID;
+    property ParentID: String read FParentID write FParentID;
+    property Parent: Integer read FParent write FParent;
+    property Name: String read FName write FName;
+    property SpanType: String read FType write FType;
+    property Start: Double read FStart write FStart;
+    property Duration: Double read FDuration write FDuration;
+    property StackTrace: TList<String> read FStackTrace;
+    property Context: TAPMContext read FContext;
+  end;
+
 implementation
 
 {$REGION 'TAPMDBContext'}
@@ -195,4 +227,85 @@ begin
   end;
 end;
 {$ENDREGION}
+
+{$REGION 'TAPMSpan'}
+constructor TAPMSpan.Create;
+begin
+  FID := String.Empty;
+  FTraceID := String.Empty;
+  FTransactionID := String.Empty;
+  FParentID := String.Empty;
+  FParent := 0;
+  FName := String.Empty;
+  FType := String.Empty;
+  FStart := 0.00;
+  FDuration := 0.00;
+  FStackTrace := TList<String>.Create;
+  FContext := TAPMContext.Create;
+end;
+
+constructor TAPMSpan.Create(AAPMSpan: TAPMSpan);
+var
+  i: Integer;
+begin
+  FID := AAPMSpan.ID;
+  FTraceID := AAPMSpan.TraceID;
+  FTransactionID := AAPMSpan.TransactionID;
+  FParentID := AAPMSpan.ParentID;
+  FParent := AAPMSpan.Parent;
+  FName := AAPMSpan.Name;
+  FType := AAPMSpan.SpanType;
+  FStart := AAPMSpan.Start;
+  FDuration := AAPMSpan.Duration;
+  FStackTrace := TList<String>.Create;
+  for i := 0 to (AAPMSpan.StackTrace.Count - 1) do
+    FStackTrace.Add(AAPMSpan.StackTrace[i]);
+  FContext := TAPMContext.Create(AAPMSpan.Context);
+end;
+
+destructor TAPMSpan.Destroy;
+begin
+  FStackTrace.Free;
+  FContext.Free;
+end;
+
+function TAPMSpan.GetJSONObject: TJSONObject;
+var
+  LStackStrce: TJSONArray;
+  i: Integer;
+begin
+  Result := TJSONObject.Create;
+  Result.AddPair('id', FID);
+  Result.AddPair('trace_id', FTraceID);
+  Result.AddPair('parent_id', FParentID);
+  Result.AddPair('transaction_id', FTransactionID);
+  Result.AddPair('parent', TJSONNUmber.Create(FParent));
+  Result.AddPair('name', FName);
+  Result.AddPair('type', FType);
+  Result.AddPair('start', TJSONNUmber.Create(FStart));
+  Result.AddPair('duration', TJSONNUmber.Create(FDuration));
+  LStackStrce := TJSONArray.Create;
+  for i := 0 to (FStackTrace.Count - 1) do
+     LStackStrce.Add(FStackTrace[i]);
+  Result.AddPair('stacktrace', LStackStrce);
+  Result.AddPair('context', FContext.GetJSONObject);
+end;
+
+function TAPMSpan.GetJSONString: String;
+var
+  LObj: TJSONObject;
+begin
+  LObj := Self.GetJSONObject;
+  try
+    Result := LObj.ToJSON;
+  finally
+    LObj.Free;
+  end;
+end;
+{$ENDREGION}
+
 end.
+
+
+
+

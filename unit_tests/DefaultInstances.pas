@@ -47,6 +47,8 @@ type
     class function CreateDefaultAPMDBContext: TAPMDBContext;
     class function CreateDefaultAPMhttpContext: TAPMhttpContext;
     class function CreateDefaultAPMContext: TAPMContext;
+    class function CreateSampleAPMSpan: TAPMSpan;
+    class function CreateDefaultAPMSpan: TAPMSpan;
   end;
 
 implementation
@@ -260,6 +262,45 @@ begin
   Result.httpContext.URL := 'http://www.allthingssyslog.com';
   Result.httpContext.StatusCode := 200;
   Result.httpContext.Method := 'GET';
+end;
+
+class function TDefaultInstances.CreateSampleAPMSpan: TAPMSpan;
+begin
+  //{"id":"0123456a89012345","trace_id":"0123456789abcdef0123456789abcdef","parent_id":"ab23456a89012345","transaction_id":"ab23456a89012345","parent":1,"name":"GET /api/types","type":"request","start":1.845,"duration":3.5642981,"stacktrace":[],"context":{}}
+  Result := TAPMSpan.Create;
+  Result.ID := '0123456a89012345';
+  Result.TraceID := '0123456789abcdef0123456789abcdef';
+  Result.ParentID := 'ab23456a89012345';
+  Result.TransactionID := 'ab23456a89012345';
+  Result.Parent := 1;
+  Result.Name := 'GET /api/types';
+  Result.SpanType := 'request';
+  Result.Start := 1.845;
+  Result.Duration := 3.5642981;
+end;
+
+class function TDefaultInstances.CreateDefaultAPMSpan: TAPMSpan;
+begin
+  //{"id":"0123456a89012345","trace_id":"0123456789abcdef0123456789abcdef","parent_id":"ab23456a89012345","transaction_id":"ab23456a89012345","parent":1,"name":"GET /api/types","type":"request","start":1.845,"duration":3.5642981,"stacktrace":["StackTrace Line 1","StackTrace Line 2"],"context":{"db":{"instance":"localhost\\default","statement":"Select LastName + ', ' + FirstName FullName, Age From Employee","type":"MSSQL","user":"sa"},"http":{"url":"http:\/\/www.allthingssyslog.com","status_code":200,"method":"GET"}}}
+  Result := TAPMSpan.Create;
+  Result.ID := '0123456a89012345';
+  Result.TraceID := '0123456789abcdef0123456789abcdef';
+  Result.ParentID := 'ab23456a89012345';
+  Result.TransactionID := 'ab23456a89012345';
+  Result.Parent := 1;
+  Result.Name := 'GET /api/types';
+  Result.SpanType := 'request';
+  Result.Start := 1.845;
+  Result.Duration := 3.5642981;
+  Result.StackTrace.Add('StackTrace Line 1');
+  Result.StackTrace.Add('StackTrace Line 2');
+  Result.Context.DBContext.Instance := 'localhost\default';
+  Result.Context.DBContext.Statement := 'Select LastName + '', '' + FirstName FullName, Age From Employee';
+  Result.Context.DBContext.DBType := 'MSSQL';
+  Result.Context.DBContext.User := 'sa';
+  Result.Context.httpContext.URL := 'http://www.allthingssyslog.com';
+  Result.Context.httpContext.StatusCode := 200;
+  Result.Context.httpContext.Method := 'GET';
 end;
 
 end.

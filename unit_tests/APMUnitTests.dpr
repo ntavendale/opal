@@ -43,7 +43,8 @@ uses
   APM.Span in '..\apm_client\APM.Span.pas',
   APMDBContextTest in 'APMDBContextTest.pas',
   APMhttpContextTest in 'APMhttpContextTest.pas',
-  APMContextTest in 'APMContextTest.pas';
+  APMContextTest in 'APMContextTest.pas',
+  APMSpanTest in 'APMSpanTest.pas';
 
 var
   runner : ITestRunner;
