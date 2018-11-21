@@ -25,7 +25,7 @@ interface
 
 uses
   System.SysUtils, System.Classes, System.JSON, DUnitX.TestFramework, APM.Metadata,
-  APM.Transaction, APM.Error;
+  APM.Transaction, APM.Error, APM.Span;
 
 type
   TDefaultInstances = class
@@ -44,6 +44,7 @@ type
     class function CreateDefaultAPMLog: TAPMLog;
     class function CreateSampleAPMError: TAPMError;
     class function CreateDefaultAPMError: TAPMError;
+    class function CreateDefaultAPMDBContext: TAPMDBContext;
   end;
 
 implementation
@@ -225,6 +226,16 @@ begin
   Result.Log.ParamMessage := 'Test Module';
   Result.Log.StackTrace.Add('StackTrace Line 1');
   Result.Log.StackTrace.Add('StackTrace Line 2');
+end;
+
+class function TDefaultInstances.CreateDefaultAPMDBContext: TAPMDBContext;
+begin
+  //{"instance":"localhost\\default","statement":"Select LastName + ', ' + FirstName FullName, Age From Employee","type":"MSSQL","user":"sa"}
+  Result := TAPMDBContext.Create;
+  Result.Instance := 'localhost\default';
+  Result.Statement := 'Select LastName + '', '' + FirstName FullName, Age From Employee';
+  Result.DBType := 'MSSQL';
+  Result.User := 'sa';
 end;
 
 end.

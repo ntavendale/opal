@@ -39,7 +39,9 @@ uses
   APM.Error in '..\apm_client\APM.Error.pas',
   APMExceptionTest in 'APMExceptionTest.pas',
   APMLogTest in 'APMLogTest.pas',
-  APMErrorTest in 'APMErrorTest.pas';
+  APMErrorTest in 'APMErrorTest.pas',
+  APM.Span in '..\apm_client\APM.Span.pas',
+  APMDBContextTest in 'APMDBContextTest.pas';
 
 var
   runner : ITestRunner;
