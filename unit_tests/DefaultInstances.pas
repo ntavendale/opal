@@ -45,6 +45,8 @@ type
     class function CreateSampleAPMError: TAPMError;
     class function CreateDefaultAPMError: TAPMError;
     class function CreateDefaultAPMDBContext: TAPMDBContext;
+    class function CreateDefaultAPMhttpContext: TAPMhttpContext;
+    class function CreateDefaultAPMContext: TAPMContext;
   end;
 
 implementation
@@ -236,6 +238,28 @@ begin
   Result.Statement := 'Select LastName + '', '' + FirstName FullName, Age From Employee';
   Result.DBType := 'MSSQL';
   Result.User := 'sa';
+end;
+
+class function TDefaultInstances.CreateDefaultAPMhttpContext: TAPMhttpContext;
+begin
+  //{"url":"http:\/\/www.allthingssyslog.com","status_code":200,"method":"GET"}
+  Result := TAPMhttpContext.Create;
+  Result.URL := 'http://www.allthingssyslog.com';
+  Result.StatusCode := 200;
+  Result.Method := 'GET';
+end;
+
+class function TDefaultInstances.CreateDefaultAPMContext: TAPMContext;
+begin
+  //{"db":{"instance":"localhost\\default","statement":"Select LastName + ', ' + FirstName FullName, Age From Employee","type":"MSSQL","user":"sa"},"http":{"url":"http:\/\/www.allthingssyslog.com","status_code":200,"method":"GET"}}
+  Result := TAPMContext.Create;
+  Result.DBContext.Instance := 'localhost\default';
+  Result.DBContext.Statement := 'Select LastName + '', '' + FirstName FullName, Age From Employee';
+  Result.DBContext.DBType := 'MSSQL';
+  Result.DBContext.User := 'sa';
+  Result.httpContext.URL := 'http://www.allthingssyslog.com';
+  Result.httpContext.StatusCode := 200;
+  Result.httpContext.Method := 'GET';
 end;
 
 end.

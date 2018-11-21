@@ -41,7 +41,9 @@ uses
   APMLogTest in 'APMLogTest.pas',
   APMErrorTest in 'APMErrorTest.pas',
   APM.Span in '..\apm_client\APM.Span.pas',
-  APMDBContextTest in 'APMDBContextTest.pas';
+  APMDBContextTest in 'APMDBContextTest.pas',
+  APMhttpContextTest in 'APMhttpContextTest.pas',
+  APMContextTest in 'APMContextTest.pas';
 
 var
   runner : ITestRunner;

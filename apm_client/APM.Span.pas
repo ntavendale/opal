@@ -48,6 +48,35 @@ type
     property User: String read FUser write FUser;
   end;
 
+  TAPMhttpContext = class
+  protected
+    FURL: String;
+    FStatusCode: Integer;
+    FMethod: String;
+  public
+    constructor Create; overload;
+    constructor Create(AAPMhttpContext: TAPMhttpContext); overload;
+    function GetJSONObject: TJSONObject;
+    function GetJSONString: String;
+    property URL: String read FURL write FURL;
+    property StatusCode: Integer read FStatusCode write FStatusCode;
+    property Method: String read FMethod write FMethod;
+  end;
+
+  TAPMContext = class
+  protected
+    FDB: TAPMDBContext;
+    Fhttp: TAPMhttpContext;
+  public
+    constructor Create; overload;
+    constructor Create(AAPMContext: TAPMContext); overload;
+    destructor Destroy; override;
+    function GetJSONObject: TJSONObject;
+    function GetJSONString: String;
+    property DBContext: TAPMDBContext read FDB;
+    property httpContext: TAPMhttpContext read Fhttp;
+  end;
+
 implementation
 
 {$REGION 'TAPMDBContext'}
@@ -77,6 +106,84 @@ begin
 end;
 
 function TAPMDBContext.GetJSONString: String;
+var
+  LObj: TJSONObject;
+begin
+  LObj := Self.GetJSONObject;
+  try
+    Result := LObj.ToJSON;
+  finally
+    LObj.Free;
+  end;
+end;
+{$ENDREGION}
+
+{$REGION 'TAPMhttpContext'}
+constructor TAPMhttpContext.Create;
+begin
+  FURL := String.Empty;
+  FStatusCode := 0;
+  FMethod := String.Empty;
+end;
+
+constructor TAPMhttpContext.Create(AAPMhttpContext: TAPMhttpContext);
+begin
+  FURL := AAPMhttpContext.URL;
+  FStatusCode := AAPMhttpContext.StatusCode;
+  FMethod := AAPMhttpContext.Method;
+end;
+
+function TAPMhttpContext.GetJSONObject: TJSONObject;
+begin
+  Result := TJSONObject.Create;
+  Result.AddPair('url', FURL);
+  Result.AddPair('status_code', TJSONNumber.Create(FStatusCode));
+  Result.AddPair('method', FMethod);
+end;
+
+function TAPMhttpContext.GetJSONString: String;
+var
+  LObj: TJSONObject;
+begin
+  LObj := Self.GetJSONObject;
+  try
+    Result := LObj.ToJSON;
+  finally
+    LObj.Free;
+  end;
+end;
+{$ENDREGION}
+
+{$REGION 'TAPMContext'}
+constructor TAPMContext.Create;
+begin
+  FDB := TAPMDBContext.Create;
+  Fhttp := TAPMhttpContext.Create;
+end;
+
+constructor TAPMContext.Create(AAPMContext: TAPMContext);
+begin
+  FDB := TAPMDBContext.Create(AAPMContext.DBContext);
+  Fhttp := TAPMhttpContext.Create(AAPMContext.httpContext);
+end;
+
+destructor TAPMContext.Destroy;
+begin
+  FDB.Free;
+  Fhttp.Free;
+  inherited Destroy;
+end;
+
+function TAPMContext.GetJSONObject: TJSONObject;
+begin
+  Result := TJSONObject.Create;
+  if not String.IsNullOrWhitespace(FDB.FInstance) then
+    Result.AddPair('db', FDB.GetJSONObject);
+  if not String.IsNullOrWhitespace(Fhttp.URL) then
+    Result.AddPair('http', Fhttp.GetJSONObject);
+end;
+
+function TAPMContext.GetJSONString: String;
 var
   LObj: TJSONObject;
 begin
