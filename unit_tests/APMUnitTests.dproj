@@ -151,6 +151,8 @@
         <DCCReference Include="APMhttpContextTest.pas"/>
         <DCCReference Include="APMContextTest.pas"/>
         <DCCReference Include="APMSpanTest.pas"/>
+        <DCCReference Include="..\apm_client\APM.Metricset.pas"/>
+        <DCCReference Include="APMMetricsetTest.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

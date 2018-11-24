@@ -44,7 +44,9 @@ uses
   APMDBContextTest in 'APMDBContextTest.pas',
   APMhttpContextTest in 'APMhttpContextTest.pas',
   APMContextTest in 'APMContextTest.pas',
-  APMSpanTest in 'APMSpanTest.pas';
+  APMSpanTest in 'APMSpanTest.pas',
+  APM.Metricset in '..\apm_client\APM.Metricset.pas',
+  APMMetricsetTest in 'APMMetricsetTest.pas';
 
 var
   runner : ITestRunner;
