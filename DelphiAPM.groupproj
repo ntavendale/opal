@@ -6,6 +6,9 @@
         <Projects Include="unit_tests\APMUnitTests.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="apm_test\APMTest.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -23,14 +26,23 @@
     <Target Name="APMUnitTests:Make">
         <MSBuild Projects="unit_tests\APMUnitTests.dproj" Targets="Make"/>
     </Target>
+    <Target Name="APMTest">
+        <MSBuild Projects="apm_test\APMTest.dproj"/>
+    </Target>
+    <Target Name="APMTest:Clean">
+        <MSBuild Projects="apm_test\APMTest.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="APMTest:Make">
+        <MSBuild Projects="apm_test\APMTest.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="APMUnitTests"/>
+        <CallTarget Targets="APMUnitTests;APMTest"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="APMUnitTests:Clean"/>
+        <CallTarget Targets="APMUnitTests:Clean;APMTest:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="APMUnitTests:Make"/>
+        <CallTarget Targets="APMUnitTests:Make;APMTest:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
