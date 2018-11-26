@@ -38,6 +38,7 @@ type
       FHttp: TIdHTTP;
       FResponseCode: Integer;
       FResponseText: String;
+      FResponse: String;
       FFullURL: String;
       FHandler: TIdSSLIOHandlerSocketOpenSSL;
     public
@@ -52,10 +53,12 @@ type
       function Put(AResource: String; AContents: String): String; overload;
       procedure Post(AContents: String); overload;
       procedure Post(AResource: String; AContents: String); overload;
+      procedure PostContentType(AContents: String; AContentType: String); overload;
+      procedure PostContentType(AResource: String; AContents: String; AContentType: String); overload;
       function Delete: String; overload;
       function Delete(AResource: String): String; overload;
       property ResponseCode: Integer read FResponseCode;
-      property ResponseText: String read FResponseText;
+      property ResponseText: String read FResponse;
       property StatusCode: Integer read FResponseCode;
       property StatusText: String read FResponseText;
       property FullURL: String read FFullURl;
@@ -212,6 +215,13 @@ begin
   except
     //Do not throw
   end;
+  LStream := TStringStream.Create;
+  try
+    LStream.LoadFromStream(FHttp.Response.ContentStream);
+    FResponse := LStream.DataString;
+  finally
+    LStream.Free;
+  end;
   FResponseCode := FHttp.ResponseCode;
   FResponseText := FHttp.ResponseText;
 end;
@@ -225,6 +235,53 @@ begin
     LStream := TStringStream.Create(AContents);
     try
       FHttp.Request.ContentType := 'application/json';
+      FHttp.Post(String.Format('%s/%s', [FEndpointURL, AResource]), LStream);
+    finally
+      LStream.Free;
+    end;
+  except
+    //Do not throw
+  end;
+  FResponseCode := FHttp.ResponseCode;
+  FResponseText := FHttp.ResponseText;
+end;
+
+procedure TEndpointClient.PostContentType(AContents: String; AContentType: String);
+var
+  LStream: TStringStream;
+begin
+  FResponseText := String.Empty;
+  try
+    LStream := TStringStream.Create(AContents);
+    try
+      FHttp.Request.ContentType := AContentType;
+      FHttp.Post(FFullURL, LStream);
+    finally
+      LStream.Free;
+    end;
+  except
+    //Do not throw
+  end;
+  LStream := TStringStream.Create;
+  try
+    LStream.LoadFromStream(FHttp.Response.ContentStream);
+    FResponse := LStream.DataString;
+  finally
+    LStream.Free;
+  end;
+  FResponseCode := FHttp.ResponseCode;
+  FResponseText := FHttp.ResponseText;
+end;
+
+procedure TEndpointClient.PostContentType(AResource: String; AContents: String; AContentType: String);
+var
+  LStream: TStringStream;
+begin
+  FResponseText := String.Empty;
+  try
+    LStream := TStringStream.Create(AContents);
+    try
+      FHttp.Request.ContentType := AContentType;
       FHttp.Post(String.Format('%s/%s', [FEndpointURL, AResource]), LStream);
     finally
       LStream.Free;

@@ -13,4 +13,24 @@ object fmAPMTestMain: TfmAPMTestMain
   OldCreateOrder = False
   PixelsPerInch = 96
   TextHeight = 18
+  object btnTestTx: TButton
+    Left = 64
+    Top = 40
+    Width = 75
+    Height = 25
+    Caption = 'Test TX'
+    TabOrder = 0
+    OnClick = btnTestTxClick
+  end
+  object memMain: TMemo
+    Left = 96
+    Top = 112
+    Width = 433
+    Height = 193
+    Lines.Strings = (
+      'memMain')
+    ScrollBars = ssBoth
+    TabOrder = 1
+    WordWrap = False
+  end
 end

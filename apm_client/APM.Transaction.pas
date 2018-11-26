@@ -48,7 +48,7 @@ type
     FName: String;
     FResult: String;
     FTxType: String;
-    FTimestamp: UInt64; //In sample, but not in documentation. Appears as unsingend int.
+    FTimestamp: Int64; //In sample, but not in documentation. Appears as unsingend int.
     FSampled: Boolean;
     FID: String;
     FTransactionType: String;
@@ -65,7 +65,7 @@ type
     property Name: String read FName write FName;
     property TxResult: String read FResult write FResult;
     property TxType: String read FTxType write FTxType;
-    property Timestamp: UInt64 read FTimestamp write FTimestamp;
+    property Timestamp: Int64 read FTimestamp write FTimestamp;
     property Sampled: Boolean read FSampled write FSampled;
     property ID: String read FID write FID;
     property TraceID: String read FTraceID write FTraceID;
