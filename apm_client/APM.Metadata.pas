@@ -201,8 +201,8 @@ type
     procedure AddSystem;
     procedure AddUser;
     procedure Reset;
-    function GetJSONObject: TJSONObject;
-    function GetJSONString: String;
+    function GetJSONObject(ARequestBodyFormat: Boolean = FALSE): TJSONObject;
+    function GetJSONString(ARequestBodyFormat: Boolean = FALSE): String;
     property HasService: Boolean read GetHasService;
     property HasProcess: Boolean read GetHasProcess;
     property HasSystem: Boolean read GetHasSystem;
@@ -816,25 +816,34 @@ begin
   end;
 end;
 
-function TAPMMetadata.GetJSONObject: TJSONObject;
+function TAPMMetadata.GetJSONObject(ARequestBodyFormat: Boolean = FALSE): TJSONObject;
+var
+  LMetadataObj: TJSONObject;
 begin
-  Result := TJSONObject.Create;
+  LMetadataObj := TJSONObject.Create;
   //Service is required
   //https://www.elastic.co/guide/en/apm/server/6.5/metadata-api.html
-  Result.AddPair('service', FService.GetJSONObject);
+  LMetadataObj.AddPair('service', FService.GetJSONObject);
   if (nil <> FProcess) then
-    Result.AddPair('process', FProcess.GetJSONObject);
+    LMetadataObj.AddPair('process', FProcess.GetJSONObject);
   if (nil <> FSystem) then
-    Result.AddPair('system', FSystem.GetJSONObject);
+    LMetadataObj.AddPair('system', FSystem.GetJSONObject);
   if (nil <> FUser) then
-    Result.AddPair('user', FUser.GetJSONObject);
+    LMetadataObj.AddPair('user', FUser.GetJSONObject);
+  if ARequestBodyFormat then
+  begin
+    Result := TJSONObject.Create;
+    Result.AddPair('metadata', LMetadataObj);
+  end
+  else
+    Result := LMetadataObj;
 end;
 
-function TAPMMetadata.GetJSONString: String;
+function TAPMMetadata.GetJSONString(ARequestBodyFormat: Boolean = FALSE): String;
 var
   LObj: TJSONObject;
 begin
-  LObj := Self.GetJSONObject;
+  LObj := Self.GetJSONObject(ARequestBodyFormat);
   try
     Result := LObj.ToJSON;
   finally

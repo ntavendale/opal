@@ -45,6 +45,8 @@ type
     procedure SampleJSONStringTest;
     [Test]
     procedure DefaultJSONStringTest;
+    [Test]
+    procedure RequestBodyFormatJSONStringTest;
   end;
 
 implementation
@@ -246,6 +248,27 @@ begin
   LError := TDefaultInstances.CreateDefaultAPMError;
   try
     LActual := LError.GetJSONString;
+  finally
+    LError.Free;
+  end;
+  Assert.AreEqual(LExpected, LActual);
+end;
+
+procedure TAPMErrorTest.RequestBodyFormatJSONStringTest;
+var
+  LError: TAPMError;
+  LExpected, LActual: String;
+begin
+  LExpected := '{"error":{"id":"abcdef0123456789","timestamp":1533827,"trace_id":"01234",' +
+               '"transaction_id":"56789","parent_id":"abcdef","culprit":"Sending Socket","exception":{"code":' +
+               '"5","message":"Access Denied","module":"Test Module","attributes":null,"stacktrace":'+
+               '["StackTrace Line 1","StackTrace Line 2"],"type":"EAccessDenied",'+
+               '"handled":true},"log":{"level":"DEBUG","logger_name":"File Loger",'+
+               '"message":"Access Denied","param_message":"Test Module","stacktrace":'+
+               '["StackTrace Line 1","StackTrace Line 2"]}}}';
+  LError := TDefaultInstances.CreateDefaultAPMError;
+  try
+    LActual := LError.GetJSONString(TRUE);
   finally
     LError.Free;
   end;

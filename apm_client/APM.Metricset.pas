@@ -42,7 +42,7 @@ type
 
   TAPMMetricset = class
   protected
-    FTimeStamp: UInt64;
+    FTimeStamp: Int64;
     FList: TObjectList<TMetricSample>;
     function GetCount: Integer;
     function GetListItem(AIndex: Integer): TMetricSample;
@@ -54,10 +54,10 @@ type
     procedure Add(AValue: TMetricSample);
     procedure Delete(AIndex: Integer);
     procedure Clear;
-    function GetJSONObject: TJSONObject;
-    function GetJSONString: String;
+    function GetJSONObject(ARequestBodyFormat: Boolean = FALSE): TJSONObject;
+    function GetJSONString(ARequestBodyFormat: Boolean = FALSE): String;
     property Count: Integer read GetCount;
-    property TimeStamp: UInt64 read FTimestamp write FTimestamp;
+    property TimeStamp: Int64 read FTimestamp write FTimestamp;
     property MetricSample[AIndex: Integer]: TMetricSample read GetListItem write SetListItem; default;
   end;
 
@@ -130,12 +130,12 @@ begin
   FList.Clear;
 end;
 
-function TAPMMetricset.GetJSONObject: TJSONObject;
+function TAPMMetricset.GetJSONObject(ARequestBodyFormat: Boolean = FALSE): TJSONObject;
 var
-  LSamples, LSample: TJSONObject;
+  LMetricset, LSamples, LSample: TJSONObject;
   i: Integer;
 begin
-  Result := TJSONObject.Create;
+  LMetricset := TJSONObject.Create;
   LSamples  := TJSONObject.Create;
   for i := 0 to (FList.Count - 1) do
   begin
@@ -144,15 +144,22 @@ begin
     LSamples.AddPair(FList[i].Name, LSample);
   end;
 
-  Result.AddPair('samples', LSamples);
-  Result.AddPair('timestamp', TJSONNUmber.Create(FTimeStamp));
+  LMetricset.AddPair('samples', LSamples);
+  LMetricset.AddPair('timestamp', TJSONNUmber.Create(FTimeStamp));
+  if ARequestBodyFormat then
+  begin
+    Result := TJSONObject.Create;
+    Result.AddPair('metricset', LMetricset);
+  end
+  else
+    Result := LMetricset;
 end;
 
-function TAPMMetricset.GetJSONString: String;
+function TAPMMetricset.GetJSONString(ARequestBodyFormat: Boolean = FALSE): String;
 var
   LObj: TJSONObject;
 begin
-  LObj := Self.GetJSONObject;
+  LObj := Self.GetJSONObject(ARequestBodyFormat);
   try
     Result := LObj.ToJSON;
   finally

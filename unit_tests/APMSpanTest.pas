@@ -45,6 +45,8 @@ type
     procedure DefaultJSONStringTest;
     [Test]
     procedure SampleJSONStringTest;
+    [Test]
+    procedure RequestBodyFormatJSONStringTest;
   end;
 
 implementation
@@ -269,6 +271,26 @@ begin
   Assert.AreEqual(LExpected, LActual);
 end;
 
+procedure TAPMSpanTest.RequestBodyFormatJSONStringTest;
+var
+  LSpan: TAPMSpan;
+  LExpected, LActual: String;
+begin
+  LExpected := '{"span":{"id":"0123456a89012345","trace_id":"0123456789abcdef0123456789abcdef",'+
+               '"parent_id":"ab23456a89012345","transaction_id":"ab23456a89012345",'+
+               '"parent":1,"name":"GET \/api\/types","type":"request","start":1.845,'+
+               '"duration":3.5642981,"stacktrace":["StackTrace Line 1","StackTrace Line 2"],'+
+               '"context":{"db":{"instance":"localhost\\default","statement":'+
+               '"Select LastName + '', '' + FirstName FullName, Age From Employee","type":"MSSQL",'+
+               '"user":"sa"},"http":{"url":"http:\/\/www.allthingssyslog.com","status_code":200,"method":"GET"}}}}';
+  LSpan := TDefaultInstances.CreateDefaultAPMSpan;
+  try
+    LActual := LSpan.GetJSONString(TRUE);
+  finally
+    LSpan.Free;
+  end;
+  Assert.AreEqual(LExpected, LActual);
+end;
 initialization
   TDUnitX.RegisterTestFixture(TAPMSpanTest);
 end.

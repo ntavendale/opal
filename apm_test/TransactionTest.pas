@@ -265,8 +265,8 @@ begin
   try
     LIndexDetail := TStringList.Create;
     try
-      LIndexDetail.Add('{"metadata":' + FMetadata.GetJsonString + '}');
-      LIndexDetail.Add('{"transaction":' + FTransaction.GetJSONString + '}');
+      LIndexDetail.Add(FMetadata.GetJsonString(TRUE));
+      LIndexDetail.Add(FTransaction.GetJSONString(TRUE));
       try
         LEndpoint.PostContentType(LIndexDetail.Text, 'application/x-ndjson');
         Result := LEndpoint.StatusText + #13#10 + LIndexDetail.Text;

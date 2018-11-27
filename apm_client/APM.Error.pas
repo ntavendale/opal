@@ -90,8 +90,8 @@ type
     constructor Create; overload;
     constructor Create(AAPMError: TAPMError); overload;
     destructor Destroy; override;
-    function GetJSONObject: TJSONObject;
-    function GetJSONString: String;
+    function GetJSONObject(ARequestBodyFormat: Boolean = FALSE): TJSONObject;
+    function GetJSONString(ARequestBodyFormat: Boolean = FALSE): String;
     property ID: String read FID write FID;
     property TimeStamp: UInt64 read FTimeStamp write FTimeStamp;
     property TraceID: String read FTraceID write FTraceID;
@@ -267,33 +267,41 @@ begin
   inherited Destroy;
 end;
 
-function TAPMError.GetJSONObject: TJSONObject;
+function TAPMError.GetJSONObject(ARequestBodyFormat: Boolean = FALSE): TJSONObject;
 var
+  LErrorObj: TJSONObject;
   LStackTrace: TJSONArray;
   LTrace: String;
 begin
-  Result := TJSONObject.Create;
-  Result.AddPair('id', FID);
-  Result.AddPair('timestamp', TJSONNUmber.Create(FTimestamp));
-  Result.AddPair('trace_id', FTraceID);
-  Result.AddPair('transaction_id', FTransactionID);
-  Result.AddPair('parent_id', FParentID);
-  Result.AddPair('culprit', FCulprit);
+  LErrorObj := TJSONObject.Create;
+  LErrorObj.AddPair('id', FID);
+  LErrorObj.AddPair('timestamp', TJSONNUmber.Create(FTimestamp));
+  LErrorObj.AddPair('trace_id', FTraceID);
+  LErrorObj.AddPair('transaction_id', FTransactionID);
+  LErrorObj.AddPair('parent_id', FParentID);
+  LErrorObj.AddPair('culprit', FCulprit);
   if (not String.IsNullOrWhitespace(FException.ExceptionType)) or (not String.IsNullOrWhitespace(FException.ExceptionMessage)) then
   begin
-    Result.AddPair('exception', FException.GetJSONObject);
+    LErrorObj.AddPair('exception', FException.GetJSONObject);
   end;
   if not String.IsNullOrWhitespace(FLog.LogMessage) then
   begin
-    Result.AddPair('log', FLog.GetJSONObject);
+    LErrorObj.AddPair('log', FLog.GetJSONObject);
   end;
+  if ARequestBodyFormat then
+  begin
+    Result := TJSONObject.Create;
+    Result.AddPair('error', LErrorObj);
+  end
+  else
+    Result := LErrorObj;
 end;
 
-function TAPMError.GetJSONString: String;
+function TAPMError.GetJSONString(ARequestBodyFormat: Boolean = FALSE): String;
 var
   LObj: TJSONObject;
 begin
-  LObj := Self.GetJSONObject;
+  LObj := Self.GetJSONObject(ARequestBodyFormat);
   try
     Result := LObj.ToJSON;
   finally

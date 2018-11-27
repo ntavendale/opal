@@ -96,8 +96,8 @@ type
     constructor Create; overload;
     constructor Create(AAPMSpan: TAPMSpan); overload;
     destructor Destroy; override;
-    function GetJSONObject: TJSONObject;
-    function GetJSONString: String;
+    function GetJSONObject(ARequestBodyFormat: Boolean = FALSE): TJSONObject;
+    function GetJSONString(ARequestBodyFormat: Boolean = FALSE): String;
     property ID: String read FID write FID;
     property TraceID: String read FTraceID write FTraceID;
     property TransactionID: String read FTransactionID write FTransactionID;
@@ -109,6 +109,24 @@ type
     property Duration: Double read FDuration write FDuration;
     property StackTrace: TList<String> read FStackTrace;
     property Context: TAPMContext read FContext;
+  end;
+
+  TSpans = class
+  protected
+    FList: TObjectList<TAPMSpan>;
+    function GetCount: Integer;
+    function GetListItem(AIndex: Integer): TAPMSpan;
+    procedure SetListItem(AIndex: Integer; AValue: TAPMSpan);
+  public
+    constructor Create; overload;
+    constructor Create(ASpans: TSpans); overload;
+    destructor Destroy; override;
+    procedure Add(AValue: TAPMSpan);
+    procedure Delete(AIndex: Integer);
+    procedure Clear;
+    property Count: Integer read GetCount;
+    property Spans[AIndex: Integer]: TAPMSpan read GetListItem write SetListItem; default;
+
   end;
 
 implementation
@@ -271,33 +289,40 @@ begin
   FContext.Free;
 end;
 
-function TAPMSpan.GetJSONObject: TJSONObject;
+function TAPMSpan.GetJSONObject(ARequestBodyFormat: Boolean = FALSE): TJSONObject;
 var
+  LSpanObj: TJSONObject;
   LStackStrce: TJSONArray;
   i: Integer;
 begin
-  Result := TJSONObject.Create;
-  Result.AddPair('id', FID);
-  Result.AddPair('trace_id', FTraceID);
-  Result.AddPair('parent_id', FParentID);
-  Result.AddPair('transaction_id', FTransactionID);
-  Result.AddPair('parent', TJSONNUmber.Create(FParent));
-  Result.AddPair('name', FName);
-  Result.AddPair('type', FType);
-  Result.AddPair('start', TJSONNUmber.Create(FStart));
-  Result.AddPair('duration', TJSONNUmber.Create(FDuration));
+  LSpanObj := TJSONObject.Create;
+  LSpanObj.AddPair('id', FID);
+  LSpanObj.AddPair('trace_id', FTraceID);
+  LSpanObj.AddPair('parent_id', FParentID);
+  LSpanObj.AddPair('transaction_id', FTransactionID);
+  LSpanObj.AddPair('parent', TJSONNUmber.Create(FParent));
+  LSpanObj.AddPair('name', FName);
+  LSpanObj.AddPair('type', FType);
+  LSpanObj.AddPair('start', TJSONNUmber.Create(FStart));
+  LSpanObj.AddPair('duration', TJSONNUmber.Create(FDuration));
   LStackStrce := TJSONArray.Create;
   for i := 0 to (FStackTrace.Count - 1) do
      LStackStrce.Add(FStackTrace[i]);
-  Result.AddPair('stacktrace', LStackStrce);
-  Result.AddPair('context', FContext.GetJSONObject);
+  LSpanObj.AddPair('stacktrace', LStackStrce);
+  LSpanObj.AddPair('context', FContext.GetJSONObject);
+  if ARequestBodyFormat then
+  begin
+    Result := TJSONObject.Create;
+    Result .AddPair('span', LSpanObj);
+  end else
+    Result := LSpanObj;
 end;
 
-function TAPMSpan.GetJSONString: String;
+function TAPMSpan.GetJSONString(ARequestBodyFormat: Boolean = FALSE): String;
 var
   LObj: TJSONObject;
 begin
-  LObj := Self.GetJSONObject;
+  LObj := Self.GetJSONObject(ARequestBodyFormat);
   try
     Result := LObj.ToJSON;
   finally
@@ -306,6 +331,57 @@ begin
 end;
 {$ENDREGION}
 
+{$REGION 'TSpans'}
+constructor TSpans.Create;
+begin
+  FList := TObjectList<TAPMSpan>.Create(TRUE);
+end;
+
+constructor TSpans.Create(ASpans: TSpans);
+var
+  i: Integer;
+begin
+  FList := TObjectList<TAPMSpan>.Create(TRUE);
+  for i := 0 to (ASpans.Count - 1) do
+    FList.Add(TAPMSpan.Create(ASpans[i]));
+end;
+
+destructor TSpans.Destroy;
+begin
+  FList.Free;
+  inherited Destroy;
+end;
+
+function TSpans.GetCount: Integer;
+begin
+  Result := FList.Count;
+end;
+
+function TSpans.GetListItem(AIndex: Integer): TAPMSpan;
+begin
+  Result := FList[AIndex];
+end;
+
+procedure TSpans.SetListItem(AIndex: Integer; AValue: TAPMSpan);
+begin
+  FList[AIndex] := AValue;
+end;
+
+procedure TSpans.Add(AValue: TAPMSpan);
+begin
+  FList.Add(AValue);
+end;
+
+procedure TSpans.Delete(AIndex: Integer);
+begin
+  FList.Delete(AIndex);
+end;
+
+procedure TSpans.Clear;
+begin
+  FList.Clear;
+end;
+{$ENDREGION}
 end.
 
 

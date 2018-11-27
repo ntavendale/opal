@@ -317,17 +317,17 @@ end;
 
 class function TDefaultInstances.CreateDefaultAPMMetricset: TAPMMetricset;
 begin
-  //{"samples":{"byte_counter":{"value":1},"short_counter":{"value": 227},"integer_gauge":{"value":42767},"long_gauge":{"value": 3147483648},"float_gauge":{"value": 9.16},"double_gauge":{"value":3.141592653589793},"dotted.float.gauge":{"value":6.12},"negative.d.o.t.t.e.d":{value": -1022}}, "timestamp":149617}
+  //{"samples":{"byte_counter":{"value":1},"short_counter":{"value": 227},"integer_gauge":{"value":42767},"long_gauge":{"value":3147483648},"float_gauge":{"value": 9.16},"double_gauge":{"value":3.14159265358979},"dotted.float.gauge":{"value":6.12},"negative.d.o.t.t.e.d":{value": -1022}}, "timestamp":1496170422281000}
   Result := TAPMMetricset.Create;
   Result.Add(TMetricSample.Create('byte_counter', 1));
   Result.Add(TMetricSample.Create('short_counter', 227));
   Result.Add(TMetricSample.Create('integer_gauge', 42767));
   Result.Add(TMetricSample.Create('long_gauge', 3147483648));
   Result.Add(TMetricSample.Create('float_gauge', 9.16));
-  Result.Add(TMetricSample.Create('double_gauge', 3.141592653589793));
+  Result.Add(TMetricSample.Create('double_gauge', 3.14159265358979));
   Result.Add(TMetricSample.Create('dotted.float.gauge', 6.12));
   Result.Add(TMetricSample.Create('negative.d.o.t.t.e.d', -1022));
-  Result.TimeStamp := 149617;
+  Result.TimeStamp := 1496170422281000;
 end;
 
 end.

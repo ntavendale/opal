@@ -41,6 +41,8 @@ type
     procedure JSONObjectTest;
     [Test]
     procedure JSONStringTest;
+    [Test]
+    procedure RequestBodyFormatJSONStringTest;
   end;
 
 implementation
@@ -210,6 +212,29 @@ begin
   LMetadata := TDefaultInstances.CreateDefaultAPMMetadata;
   try
     LActual := LMetadata.GetJSONString;
+  finally
+    LMetadata.Free;
+  end;
+  Assert.AreEqual(LExpected, LActual);
+end;
+
+procedure TAPMMetadataTest.RequestBodyFormatJSONStringTest;
+var
+  LMetadata: TAPMMetadata;
+  LExpected, LActual: String;
+begin
+  LExpected := '{"metadata":{"service":{"agent":{"name":"Test Agent","version":"1.2.3.4"},'  +
+               '"framework":{"name":"Test Framework","version":"5.6.7.8"},'      +
+               '"language":{"name":"Delphi Object Pascal","version":"20"},'      +
+               '"name":"Test Service Name","environment":"Production",'          +
+               '"runtime":{"name":".NET","version":"4.5.2"},"version":"1.0.0.0"},'+
+               '"process":{"pid":98,"ppid":90,"title":"Test Application","argv":["\/v","\/d"]},' +
+               '"system":{"architecture":"x64","hostname":"hooded.claw","platform":"Windows"},' +
+               '"user":{"id":"52A028B4-7A84-4E5B-A6D8-9696F169A54E","email":"me@here.com","username":"DOMAIN\\UserName"}' +
+               '}}';
+  LMetadata := TDefaultInstances.CreateDefaultAPMMetadata;
+  try
+    LActual := LMetadata.GetJSONString(TRUE);
   finally
     LMetadata.Free;
   end;

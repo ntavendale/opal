@@ -41,6 +41,8 @@ type
     procedure JSONObjectTest;
     [Test]
     procedure JSONStringTest;
+    [Test]
+    procedure RequestBodyFormatJSONStringTest;
   end;
 
 implementation
@@ -61,7 +63,7 @@ begin
     Assert.AreEqual(LExpectedDuration, LActual.Duration);
     Assert.IsTrue(LActual.Sampled);
     Assert.AreEqual(String.Empty, LActual.Name);
-    Assert.AreEqual(UInt64(0), LActual.Timestamp);
+    Assert.AreEqual(Int64(0), LActual.Timestamp);
     Assert.AreEqual(Cardinal(0), LActual.SpanCount.Started);
     Assert.AreEqual(Integer(-1), LActual.SpanCount.Dropped);
   finally
@@ -134,11 +136,28 @@ var
   LExpected, LActual: String;
 begin
   LExpected := '{"trace_id":"01234567890123456789abcdefabcdef","id":"abcdef1478523690",' +
-               '"type":"request","duration":32.592981,"timestamp":1.535655207154E15,' +
+               '"type":"request","duration":32.592981,"timestamp":1535655207154000,' +
                '"result":"200","context":null,"spans":null,"sampled":null,"span_count":{"started":0}}';
   LTransaction := TDefaultInstances.CreateDefaultAPMTransaction;
   try
     LActual := LTransaction.GetJSONString;
+  finally
+    LTransaction.Free;
+  end;
+  Assert.AreEqual(LExpected, LActual);
+end;
+
+procedure TAPMTransactionTest.RequestBodyFormatJSONStringTest;
+var
+  LTransaction: TAPMTransaction;
+  LExpected, LActual: String;
+begin
+  LExpected := '{"transaction":{"trace_id":"01234567890123456789abcdefabcdef","id":"abcdef1478523690",' +
+               '"type":"request","duration":32.592981,"timestamp":1535655207154000,' +
+               '"result":"200","context":null,"spans":null,"sampled":null,"span_count":{"started":0}}}';
+  LTransaction := TDefaultInstances.CreateDefaultAPMTransaction;
+  try
+    LActual := LTransaction.GetJSONString(TRUE);
   finally
     LTransaction.Free;
   end;

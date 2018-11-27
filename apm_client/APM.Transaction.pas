@@ -26,7 +26,8 @@ unit APM.Transaction;
 interface
 
 uses
-  System.SysUtils, System.Classes, System.JSON, System.Generics.Collections;
+  System.SysUtils, System.Classes, System.JSON, System.Generics.Collections,
+  APM.Span;
 
 type
   TSpanCount = class
@@ -54,13 +55,15 @@ type
     FTransactionType: String;
     FTraceID: String;
     FParentID: String;
+    FSpans: TSpans;
     FSpanCount: TSpanCount;
   public
     constructor Create; overload;
     constructor Create(AAPMTransaction: TAPMTransaction); overload;
     destructor Destroy; override;
-    function GetJSONObject: TJSONObject;
-    function GetJSONString: String;
+    function AddSpan: TAPMSpan;
+    function GetJSONObject(ARequestBodyFormat: Boolean = FALSE): TJSONObject;
+    function GetJSONString(ARequestBodyFormat: Boolean = FALSE): String;
     property Duration: Double read FDuration write FDuration;
     property Name: String read FName write FName;
     property TxResult: String read FResult write FResult;
@@ -70,6 +73,7 @@ type
     property ID: String read FID write FID;
     property TraceID: String read FTraceID write FTraceID;
     property ParentID: String read FParentID write FParentID;
+    property Spans: TSpans read FSpans;
     property SpanCount: TSpanCount read FSpanCount;
   end;
 
@@ -122,6 +126,7 @@ begin
   FTraceID := String.Empty;
   FParentID := String.Empty;
   FSpanCount := TSpanCount.Create;
+  FSpans := TSpans.Create;
 end;
 
 constructor TAPMTransaction.Create(AAPMTransaction: TAPMTransaction);
@@ -135,41 +140,58 @@ begin
   FID := AAPMTransaction.ID;
   FTraceID := AAPMTransaction.TraceID;
   FParentID := AAPMTransaction.ParentID;
+  FSpans := TSpans.Create(AAPMTransaction.Spans);
   FSpanCount := TSpanCount.Create(AAPMTransaction.SpanCount);
 end;
 
 destructor TAPMTransaction.Destroy;
 begin
+  FSpans.Free;
   FSpanCount.Free;
   inherited Destroy;
 end;
 
-function TAPMTransaction.GetJSONObject: TJSONObject;
+function TAPMTransaction.AddSpan: TAPMSpan;
+begin
+  Result := TAPMSpan.Create;
+  FSpans.Add(Result);
+end;
+
+function TAPMTransaction.GetJSONObject(ARequestBodyFormat: Boolean = FALSE): TJSONObject;
+var
+  LTx: TJSONObject;
 begin
   //ES Documentation sample (https://www.elastic.co/guide/en/apm/server/current/example-intakev2-events.html)
   //{ "transaction": { "trace_id": "01234567890123456789abcdefabcdef", "id": "abcdef1478523690", "type": "request", "duration": 32.592981, "timestamp": 1535655207154000, "result": "200", "context": null, "spans": null, "sampled": null, "span_count": { "started": 0 }}}
-  Result := TJSONObject.Create;
-  Result.AddPair('trace_id', FTraceID);
-  Result.AddPair('id', FID);
-  Result.AddPair('parent_id', FParentID);
-  Result.AddPair('type', FTxType);
-  Result.AddPair('duration', TJSONNumber.Create(FDuration));
-  Result.AddPair('timestamp', TJSONNumber.Create(FTimestamp));
-  Result.AddPair('result', FResult);
-  Result.AddPair('context', TJSONNull.Create);
-  Result.AddPair('spans', TJSONNull.Create);
+  LTx := TJSONObject.Create;
+  LTx.AddPair('trace_id', FTraceID);
+  LTx.AddPair('id', FID);
+  LTx.AddPair('parent_id', FParentID);
+  LTx.AddPair('type', FTxType);
+  LTx.AddPair('duration', TJSONNumber.Create(FDuration));
+  LTx.AddPair('timestamp', TJSONNumber.Create(FTimestamp));
+  LTx.AddPair('result', FResult);
+  LTx.AddPair('context', TJSONNull.Create);
+  LTx.AddPair('spans', TJSONNull.Create);
   if not FSampled then
-    Result.AddPair('sampled', TJSONBool.Create(FSampled))
+    LTx.AddPair('sampled', TJSONBool.Create(FSampled))
   else
-    Result.AddPair('sampled', TJSONNull.Create); //per sample above
-  Result.AddPair('span_count', FSpanCount.GetJSONObject);
+    LTx.AddPair('sampled', TJSONNull.Create); //per sample above
+  LTx.AddPair('span_count', FSpanCount.GetJSONObject);
+  if ARequestBodyFormat then
+  begin
+    Result := TJSONObject.Create;
+    Result.AddPair('transaction', LTx );
+  end
+  else
+    Result := LTx
 end;
 
-function TAPMTransaction.GetJSONString: String;
+function TAPMTransaction.GetJSONString(ARequestBodyFormat: Boolean = FALSE): String;
 var
   LObj: TJSONObject;
 begin
-  LObj := Self.GetJSONObject;
+  LObj := Self.GetJSONObject(ARequestBodyFormat);
   try
     Result := LObj.ToJSON;
   finally
