@@ -21,16 +21,16 @@
 * IN THE SOFTWARE.                                                             *
 *                                                                              *
 *******************************************************************************)
-unit TransactionTest;
+unit TransactionWithSpansTest;
 
 interface
 
 uses
   System.SysUtils, System.Classes, System.JSON, WinAPI.Windows, System.DateUtils,
-  APM.MetaData, APM.Transaction, UtilityRoutines, EndpointClient;
+  APM.MetaData, APM.Transaction, APM.Span, APM.Utils, UtilityRoutines, EndpointClient;
 
 type
-  TTransactionTest = class
+  TTransactionWithSpansTest = class
   protected
     FMetadata: TAPMMetadata;
     FTransaction: TAPMTransaction;
@@ -43,23 +43,25 @@ type
 
 implementation
 
-constructor TTransactionTest.Create;
+constructor TTransactionWithSpansTest.Create;
 begin
   FMetadata := TAPMMetadata.Create;
   FTransaction := TAPMTransaction.Create;
 end;
 
-destructor TTransactionTest.Destroy;
+destructor TTransactionWithSpansTest.Destroy;
 begin
   FTransaction.Free;
   FMetadata.Free;
   inherited Destroy;
 end;
 
-procedure TTransactionTest.Load;
+procedure TTransactionWithSpansTest.Load;
 var
   i: Integer;
   LDomain, LUser: String;
+  LSpan: TAPMSPan;
+  LDate: TDateTime;
 begin
   FMetadata.AddService;
   FMetadata.Service.Name := 'Delphi Client Test Service';
@@ -100,19 +102,52 @@ begin
   FMetadata.User.ID := GetSID(LUser, LDomain);
   FMetadata.User.UserName := String.Format('%s\%s', [LDomain, LUser]);
 
-  FTransaction.ID := 'B3CBAD6DA38E4C1D89238D550885FC75';
-  FTransaction.TraceID := '8D0A60147C904756A47145B219617350';
-  FTransaction.Duration := 125.6;
-  FTransaction.TxResult := '200';
+  FTransaction.ID := TAPMUtils.Get64BitHexString;
+  FTransaction.TraceID := TAPMUtils.Get128BitHexString;
+  FTransaction.TxResult := 'TRUE';
   FTransaction.TxType := 'request';
   FTransaction.Sampled := FALSE;
-  FTransaction.Timestamp := DateTimeToUnix(TTimeZone.Local.ToUniversalTime(Now), TRUE) * 1000000;
+  LDate := IncSecond(TTimeZone.Local.ToUniversalTime(Now), -10);
+  FTransaction.Timestamp := DateTimeToUnix(LDate, TRUE) * 1000000;
+
+  LSpan := FTransaction.AddSpan;
+  LSpan.ID := TAPMUtils.Get64BitHexString;;
+  LSpan.TransactionID := FTransaction.ID;
+  LSpan.ParentID := FTransaction.ID;
+  LSpan.TraceID := FTransaction.TraceID;
+  LSpan.Parent := 1;
+  LSpan.Name := 'GET /';
+  LSpan.SpanType := 'request';
+  LSpan.Start := 100;
+  LSpan.Duration := 700;
+  LSpan.Context.httpContext.URL := 'http://www.amazon.com';
+  LSpan.Context.httpContext.StatusCode := 200;
+  LSpan.Context.httpContext.Method := 'GET';
+  IncMilliSecond(LDate, 800);
+
+  LSpan := FTransaction.AddSpan;
+  LSpan.ID := TAPMUtils.Get64BitHexString;;
+  LSpan.TransactionID := FTransaction.ID;
+  LSpan.ParentID := FTransaction.ID;
+  LSpan.TraceID := FTransaction.TraceID;
+  LSpan.Parent := 1;
+  LSpan.Name := 'GET /';
+  LSpan.SpanType := 'request';
+  LSpan.Start := 825;
+  LSpan.Duration := 600;
+  LSpan.Context.httpContext.URL := 'http://www.yahoo.com';
+  LSpan.Context.httpContext.StatusCode := 200;
+  LSpan.Context.httpContext.Method := 'GET';
+  IncMilliSecond(LDate, 625);
+
+  FTransaction.Duration := 1425;
 end;
 
-function TTransactionTest.Send: String;
+function TTransactionWithSpansTest.Send: String;
 var
   LEndpoint: TEndpointClient;
   LIndexDetail: TStringList;
+  i: Integer;
 begin
   Result := '';
   LEndpoint := TEndpointClient.Create('http://192.168.116.138', 8200, String.Empty,String.Empty, 'intake/v2/events');
@@ -121,6 +156,9 @@ begin
     try
       LIndexDetail.Add(FMetadata.GetJsonString(TRUE));
       LIndexDetail.Add(FTransaction.GetJSONString(TRUE));
+      for i := 0 to (FTransaction.Spans.Count - 1) do
+        LIndexDetail.Add(FTransaction.Spans[i].GetJSONString(TRUE));
+
       try
         LEndpoint.PostContentType(LIndexDetail.Text, 'application/x-ndjson');
         Result := LEndpoint.StatusText + #13#10 + LIndexDetail.Text;
@@ -137,5 +175,3 @@ begin
 end;
 
 end.
-
-

@@ -21,59 +21,50 @@
 * IN THE SOFTWARE.                                                             *
 *                                                                              *
 *******************************************************************************)
-unit APMTestMain;
+unit APMUtilsTest;
 
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  TransactionTest, TransactionWithSpansTest;
+  System.SysUtils, System.Classes, System.JSON, DUnitX.TestFramework, APM.Utils,
+  DefaultInstances;
 
 type
-  TfmAPMTestMain = class(TForm)
-    btnTestTx: TButton;
-    memMain: TMemo;
-    btnSpans: TButton;
-    procedure btnTestTxClick(Sender: TObject);
-    procedure btnSpansClick(Sender: TObject);
-  private
-    { Private declarations }
+  [TestFixture]
+  TAPMUtilsTest = class(TObject)
   public
-    { Public declarations }
+    [Test]
+    procedure Int64ToHex64StringTest;
+    [Test]
+    procedure Hex128StringTest;
   end;
-
-var
-  fmAPMTestMain: TfmAPMTestMain;
 
 implementation
 
-{$R *.dfm}
-
-procedure TfmAPMTestMain.btnTestTxClick(Sender: TObject);
+procedure TAPMUtilsTest.Int64ToHex64StringTest;
 var
-  LTest: TTransactionTest;
+  LExpected, LActual: String;
 begin
-  LTest := TTransactionTest.Create;
-  try
-    LTest.Load;
-    memMain.Text := LTest.Send;
-  finally
-    LTest.Free;
-  end;
+  LExpected := '07B6DF341F5DA3BB';
+  LActual := TAPMUtils.Get64BitHexString($07B6DF341F5DA3BB);
+  Assert.AreEqual(Lexpected, LActual);
+
+  LActual := TAPMUtils.Get64BitHexString($07B6DF34, $1F5DA3BB);
+  Assert.AreEqual(Lexpected, LActual);
 end;
 
-procedure TfmAPMTestMain.btnSpansClick(Sender: TObject);
+procedure TAPMUtilsTest.Hex128StringTest;
 var
-  LTest: TTransactionWithSpansTest;
+  LExpected, LActual: String;
 begin
-  LTest := TTransactionWithSpansTest.Create;
-  try
-    LTest.Load;
-    memMain.Text := LTest.Send;
-  finally
-    LTest.Free;
-  end;
+  LExpected := '07B6DF341F5DA3BB07B6DF341F5DA3BA';
+  LActual := TAPMUtils.Get128BitHexString($07B6DF341F5DA3BB, $07B6DF341F5DA3BA);
+  Assert.AreEqual(Lexpected, LActual);
+
+  LActual := TAPMUtils.Get128BitHexString($07B6DF34, $1F5DA3BB, $07B6DF34, $1F5DA3BA);
+  Assert.AreEqual(Lexpected, LActual);
 end;
 
+initialization
+  TDUnitX.RegisterTestFixture(TAPMUtilsTest);
 end.

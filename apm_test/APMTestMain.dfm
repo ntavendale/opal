@@ -11,6 +11,7 @@ object fmAPMTestMain: TfmAPMTestMain
   Font.Name = 'Calibri'
   Font.Style = []
   OldCreateOrder = False
+  Position = poScreenCenter
   PixelsPerInch = 96
   TextHeight = 18
   object btnTestTx: TButton
@@ -25,12 +26,21 @@ object fmAPMTestMain: TfmAPMTestMain
   object memMain: TMemo
     Left = 96
     Top = 112
-    Width = 433
-    Height = 193
+    Width = 585
+    Height = 273
     Lines.Strings = (
       'memMain')
     ScrollBars = ssBoth
     TabOrder = 1
     WordWrap = False
+  end
+  object btnSpans: TButton
+    Left = 208
+    Top = 40
+    Width = 75
+    Height = 25
+    Caption = 'Test Spans'
+    TabOrder = 2
+    OnClick = btnSpansClick
   end
 end
