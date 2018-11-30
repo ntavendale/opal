@@ -26,7 +26,8 @@ unit APM.Utils;
 interface
 
 uses
-  System.SysUtils, System.Classes, System.Math, System.DateUtils;
+  System.SysUtils, System.Classes, System.Math, System.DateUtils, WinApi.Windows,
+  WinApi.Messages;
 
 type
   TInt64Rec = record
@@ -48,10 +49,30 @@ type
     class function Get128BitHexString(AUpperInt64, ALowerInt64: Int64): String; overload;
     class function Get128BitHexString(AFourthInt32, AThirdInt32, ASecondInt32, AFirstInt32: Int32): String; overload;
     class function Get128BitHexString: String; overload;
+    class function GetComputerName: String;
+  end;
+
+  TStopWatch = class
+  private
+    FTicksPerSecond: TLargeInteger;
+    FStartTicks: TLargeInteger;
+    FStopTicks: TLargeInteger;
+    function GetElapsedSeconds: Double;
+    function GetElapsedMilliseconds: Double;
+    function GetElapsedMicroseconds: Double;
+  public
+    constructor Create;
+    procedure Start;
+    procedure Stop;
+    class function CreateNew: TStopWatch;
+    property ElapsedSeconds: Double read GetElapsedSeconds;
+    property ElapsedMilliseconds: Double read GetElapsedMilliseconds;
+    property ElapsedMicroseconds: Double read GetElapsedMicroseconds;
   end;
 
 implementation
 
+{$REGION 'TAPMUtils'}
 class function TAPMUtils.Get64BitHexString(AInt64: Int64): String;
 begin
   Result := String.Format('%.8x', [AInt64]);
@@ -109,5 +130,75 @@ begin
   RandSeed := TTHread.GetTickCount;
   Result := Get128BitHexString(Random(MaxInt), Random(MaxInt), Random(MaxInt), Random(MaxInt));
 end;
+
+class function TAPMUtils.GetComputerName: String;
+var
+  LSize, LErr: DWORD;
+  LBuff: PChar;
+begin
+  LSize := 0;
+  GetComputerNameEx(ComputerNameDnsHostname, nil, LSize);
+  LErr := GetLastError;
+  if ERROR_MORE_DATA = LErr then
+  begin
+    GetMem(LBuff, (LSize + 1) * SizeOf(Char));
+    try
+      if GetComputerNameEx(ComputerNameDnsHostname, LBuff, LSize)  then
+      begin
+        Result := String(LBuff);
+      end
+      else
+      begin
+        LErr := GetLastError;
+        Result := String.Format('Erro Code %d. %s', [LErr, SysErrormessage(LErr)]);
+      end;
+    finally
+      FreeMem(LBuff);
+    end;
+  end;
+
+end;
+{$ENDREGION}
+
+{$REGION 'TStopWatch'}
+constructor TStopWatch.Create;
+begin
+  QueryPerformanceFrequency(FTicksPerSecond);
+  FStartTicks := 0;
+  FStopTicks := 0;
+end;
+
+function TStopWatch.GetElapsedSeconds: Double;
+begin
+  Result := (FStopTicks - FStartTicks) / FTicksPerSecond;
+end;
+
+function TStopWatch.GetElapsedMilliseconds: Double;
+begin
+  Result := 1000 * ((FStopTicks - FStartTicks) / FTicksPerSecond);
+end;
+
+function TStopWatch.GetElapsedMicroseconds: Double;
+begin
+  Result := 1000000 * ((FStopTicks - FStartTicks) / FTicksPerSecond);
+end;
+
+procedure TStopWatch.Start;
+begin
+  FStopTicks := 0;
+  QueryPerformanceCounter(FStartTicks);
+end;
+
+procedure TStopWatch.Stop;
+begin
+  QueryPerformanceCounter(FStopTicks);
+end;
+
+class function TStopWatch.CreateNew: TStopWatch;
+begin
+  Result := TStopwatch.Create;
+  Result.Start;
+end;
+{$ENDREGION}
 
 end.

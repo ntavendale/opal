@@ -58,7 +58,7 @@ begin
   LActual := TAPMError.Create;
   try
     Assert.AreEqual(String.Empty, LActual.ID);
-    Assert.AreEqual(UInt64(0), LActual.TimeStamp);
+    Assert.AreEqual(Int64(0), LActual.TimeStamp);
     Assert.AreEqual(String.Empty, LActual.TraceID);
     Assert.AreEqual(String.Empty, LActual.TransactionID);
     Assert.AreEqual(String.Empty, LActual.ParentID);
@@ -223,7 +223,7 @@ var
   LError: TAPMError;
   LExpected, LActual: String;
 begin
-  LExpected := '{"id":"abcdef0123456789","timestamp":1533827,"log":{"level":"custom log level","message":"Cannot read property ''baz'' of undefined"}}';
+  LExpected := '{"id":"abcdef0123456789","timestamp":1533827045999000,"log":{"level":"custom log level","message":"Cannot read property ''baz'' of undefined"}}';
   LError := TDefaultInstances.CreateSampleAPMError;
   try
     LActual := LError.GetJSONString;
@@ -238,7 +238,7 @@ var
   LError: TAPMError;
   LExpected, LActual: String;
 begin
-  LExpected := '{"id":"abcdef0123456789","timestamp":1533827,"trace_id":"01234",' +
+  LExpected := '{"id":"abcdef0123456789","timestamp":1533827045999000,"trace_id":"01234",' +
                '"transaction_id":"56789","parent_id":"abcdef","culprit":"Sending Socket","exception":{"code":' +
                '"5","message":"Access Denied","module":"Test Module","attributes":null,"stacktrace":'+
                '["StackTrace Line 1","StackTrace Line 2"],"type":"EAccessDenied",'+
@@ -259,7 +259,7 @@ var
   LError: TAPMError;
   LExpected, LActual: String;
 begin
-  LExpected := '{"error":{"id":"abcdef0123456789","timestamp":1533827,"trace_id":"01234",' +
+  LExpected := '{"error":{"id":"abcdef0123456789","timestamp":1533827045999000,"trace_id":"01234",' +
                '"transaction_id":"56789","parent_id":"abcdef","culprit":"Sending Socket","exception":{"code":' +
                '"5","message":"Access Denied","module":"Test Module","attributes":null,"stacktrace":'+
                '["StackTrace Line 1","StackTrace Line 2"],"type":"EAccessDenied",'+

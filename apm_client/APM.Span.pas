@@ -26,7 +26,8 @@ unit APM.Span;
 interface
 
 uses
-  System.SysUtils, System.Classes, System.JSON, System.Generics.Collections;
+  System.SysUtils, System.Classes, System.JSON, System.Generics.Collections,
+  APM.Utils, APM.Context;
 
 //Documentation: https://www.elastic.co/guide/en/apm/server/6.5/span-api.html
 //Example: https://www.elastic.co/guide/en/apm/server/current/example-intakev2-events.html
@@ -92,10 +93,13 @@ type
     FDuration: Double;
     FStackTrace: TList<String>;
     FContext: TAPMContext;
+    FStopwatch: TStopwatch;
   public
     constructor Create; overload;
     constructor Create(AAPMSpan: TAPMSpan); overload;
     destructor Destroy; override;
+    procedure BeginSpan;
+    procedure EndSpan;
     function GetJSONObject(ARequestBodyFormat: Boolean = FALSE): TJSONObject;
     function GetJSONString(ARequestBodyFormat: Boolean = FALSE): String;
     property ID: String read FID write FID;
@@ -126,7 +130,6 @@ type
     procedure Clear;
     property Count: Integer read GetCount;
     property Spans[AIndex: Integer]: TAPMSpan read GetListItem write SetListItem; default;
-
   end;
 
 implementation
@@ -262,6 +265,7 @@ begin
   FDuration := 0.00;
   FStackTrace := TList<String>.Create;
   FContext := TAPMContext.Create;
+  FStopwatch := TStopwatch.Create;
 end;
 
 constructor TAPMSpan.Create(AAPMSpan: TAPMSpan);
@@ -281,12 +285,25 @@ begin
   for i := 0 to (AAPMSpan.StackTrace.Count - 1) do
     FStackTrace.Add(AAPMSpan.StackTrace[i]);
   FContext := TAPMContext.Create(AAPMSpan.Context);
+  FStopwatch := TStopwatch.Create;
 end;
 
 destructor TAPMSpan.Destroy;
 begin
+  FStopwatch.Free;
   FStackTrace.Free;
   FContext.Free;
+end;
+
+procedure TAPMSpan.BeginSpan;
+begin
+  FStopwatch.Start;
+end;
+
+procedure TAPMSpan.EndSpan;
+begin
+  FStopwatch.Stop;
+  FDuration := FStopwatch.ElapsedMilliseconds;
 end;
 
 function TAPMSpan.GetJSONObject(ARequestBodyFormat: Boolean = FALSE): TJSONObject;

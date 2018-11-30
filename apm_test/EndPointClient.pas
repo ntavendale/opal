@@ -124,7 +124,10 @@ begin
   except
     on E:Exception do
     begin
+      FResponseCode := FHttp.ResponseCode;
+      FResponseText := FHttp.ResponseText;
       Result := String.Format('%s', [E.Message]);
+      raise;
     end;
   end;
   FResponseCode := FHttp.ResponseCode;

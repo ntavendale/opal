@@ -26,7 +26,7 @@ unit APMAgentTest;
 interface
 
 uses
-  System.SysUtils, System.Classes, System.JSON, DUnitX.TestFramework, APM.Metadata,
+  System.SysUtils, System.Classes, System.JSON, DUnitX.TestFramework, APM.Context,
   DefaultInstances;
 
 type

@@ -35,7 +35,8 @@ uses
   TransactionTest in 'TransactionTest.pas',
   TransactionWithSpansTest in 'TransactionWithSpansTest.pas',
   UtilityRoutines in 'UtilityRoutines.pas',
-  APM.Utils in '..\apm_client\APM.Utils.pas';
+  APM.Utils in '..\apm_client\APM.Utils.pas',
+  APM.Context in '..\apm_client\APM.Context.pas';
 
 {$R *.res}
 

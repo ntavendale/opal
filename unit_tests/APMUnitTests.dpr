@@ -58,7 +58,8 @@ uses
   APM.Metricset in '..\apm_client\APM.Metricset.pas',
   APMMetricsetTest in 'APMMetricsetTest.pas',
   APM.Utils in '..\apm_client\APM.Utils.pas',
-  APMUtilsTest in 'APMUtilsTest.pas';
+  APMUtilsTest in 'APMUtilsTest.pas',
+  APM.Context in '..\apm_client\APM.Context.pas';
 
 var
   runner : ITestRunner;

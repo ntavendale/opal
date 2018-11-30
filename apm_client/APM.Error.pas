@@ -26,7 +26,8 @@ unit APM.Error;
 interface
 
 uses
-  System.SysUtils, System.Classes, System.JSON, System.Generics.Collections;
+  System.SysUtils, System.Classes, System.JSON, System.Generics.Collections,
+  System.DateUtils;
 
 //Documentation: https://www.elastic.co/guide/en/apm/server/6.5/error-api.html
 //Example: https://www.elastic.co/guide/en/apm/server/current/example-intakev2-events.html
@@ -79,7 +80,8 @@ type
   TAPMError = class
   protected
     FID: String;
-    FTimeStamp: UINT64; //Does not appear in documentation but shows up in sample request body (https://www.elastic.co/guide/en/apm/server/current/example-intakev2-events.html)
+    FTimeStamp: Int64; //Does not appear in documentation but shows up in sample request body (https://www.elastic.co/guide/en/apm/server/current/example-intakev2-events.html)
+                       //Number of Microseconds past unix epoch (01/01/1970 00:00:00.000)
     FTraceID: String;
     FTransactionID: String;
     FParentID: String;
@@ -90,16 +92,34 @@ type
     constructor Create; overload;
     constructor Create(AAPMError: TAPMError); overload;
     destructor Destroy; override;
+    procedure SetTimeStamp(ADateTime: TDateTime; AIsUTC: Boolean = FALSE);
     function GetJSONObject(ARequestBodyFormat: Boolean = FALSE): TJSONObject;
     function GetJSONString(ARequestBodyFormat: Boolean = FALSE): String;
     property ID: String read FID write FID;
-    property TimeStamp: UInt64 read FTimeStamp write FTimeStamp;
+    property TimeStamp: Int64 read FTimeStamp write FTimeStamp;
     property TraceID: String read FTraceID write FTraceID;
     property TransactionID: String read FTransactionID write FTransactionID;
     property ParentID: String read FParentID write FParentID;
     property Culprit: String read FCulprit write FCulprit;
     property Exception: TAPMException read FException;
     property Log: TAPMLog read FLog;
+  end;
+
+  TErrors = class
+  protected
+    FList: TObjectList<TAPMError>;
+    function GetCount: Integer;
+    function GetListItem(AIndex: Integer): TAPMError;
+    procedure SetListItem(AIndex: Integer; AValue: TAPMError);
+  public
+    constructor Create; overload;
+    constructor Create(AErrors: TErrors); overload;
+    destructor Destroy; override;
+    procedure Add(AValue: TAPMError);
+    procedure Delete(AIndex: Integer);
+    procedure Clear;
+    property Count: Integer read GetCount;
+    property Errors[AIndex: Integer]: TAPMError read GetListItem write SetListItem; default;
   end;
 
 implementation
@@ -267,6 +287,11 @@ begin
   inherited Destroy;
 end;
 
+procedure TAPMError.SetTimeStamp(ADateTime: TDateTime; AIsUTC: Boolean = FALSE);
+begin
+  FTimestamp := DateTimeToUnix(ADateTime, AIsUTC) * 1000000;
+end;
+
 function TAPMError.GetJSONObject(ARequestBodyFormat: Boolean = FALSE): TJSONObject;
 var
   LErrorObj: TJSONObject;
@@ -307,6 +332,58 @@ begin
   finally
     LObj.Free;
   end;
+end;
+{$ENDREGION}
+
+{$REGION 'TErrors'}
+constructor TErrors.Create;
+begin
+  FList := TObjectList<TAPMError>.Create(TRUE);
+end;
+
+constructor TErrors.Create(AErrors: TErrors);
+var
+  i: Integer;
+begin
+  FList := TObjectList<TAPMError>.Create(TRUE);
+  for i := 0 to (AErrors.Count - 1) do
+    FList.Add(TAPMError.Create(AErrors[i]));
+end;
+
+destructor TErrors.Destroy;
+begin
+  FList.Free;
+  inherited Destroy;
+end;
+
+function TErrors.GetCount: Integer;
+begin
+  Result := FList.Count;
+end;
+
+function Terrors.GetListItem(AIndex: Integer): TAPMError;
+begin
+  Result := FList[AIndex];
+end;
+
+procedure Terrors.SetListItem(AIndex: Integer; AValue: TAPMError);
+begin
+  FList[AIndex] := AValue;
+end;
+
+procedure Terrors.Add(AValue: TAPMError);
+begin
+  FList.Add(AValue);
+end;
+
+procedure Terrors.Delete(AIndex: Integer);
+begin
+  FList.Delete(AIndex);
+end;
+
+procedure Terrors.Clear;
+begin
+  FList.Clear;
 end;
 {$ENDREGION}
 

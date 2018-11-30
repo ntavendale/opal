@@ -27,7 +27,7 @@ interface
 
 uses
   System.SysUtils, System.Classes, System.JSON, DUnitX.TestFramework, APM.Metadata,
-  APM.Transaction, APM.Error, APM.Span, APM.Metricset;
+  APM.Transaction, APM.Error, APM.Span, APM.Metricset, APM.Context;
 
 type
   TDefaultInstances = class
@@ -206,7 +206,7 @@ begin
   //{"id":"abcdef0123456789","timestamp":1533827,"log":{"level":"custom log level","message":"Cannot read property 'baz' of undefined"}}
   Result := TAPMError.Create;
   Result.ID := 'abcdef0123456789';
-  Result.TimeStamp := 1533827;
+  Result.TimeStamp := 1533827045999000;
   Result.Log.Level := 'custom log level';
   Result.Log.LogMessage := 'Cannot read property ''baz'' of undefined';
 end;
@@ -216,7 +216,7 @@ begin
   //{"id":"abcdef0123456789","timestamp":1533827,"trace_id":"01234","transaction_id":"56789","parent_id":"abcdef","exception":{"code":"5","message":"Access Denied","module":"Test Module","stacktrace":["StackTrace Line 1","StackTrace Line 2"],"type":"EAccessDenied","handled":true},"log":{"level":"DEBUG","logger_name":"File Loger","message":"Access Denied","param_message":"Test Module","stacktrace":["StackTrace Line 1","StackTrace Line 2"]}}
   Result := TAPMError.Create;
   Result.ID := 'abcdef0123456789';
-  Result.TimeStamp := 1533827;
+  Result.TimeStamp := 1533827045999000;
   Result.TraceID := '01234';
   Result.TransactionID := '56789';
   Result.ParentID := 'abcdef';
