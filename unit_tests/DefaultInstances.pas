@@ -162,6 +162,8 @@ begin
 end;
 
 class function TDefaultInstances.CreateDefaultAPMTransaction: TAPMTransaction;
+var
+  LSystem: TAPMSystem;
 begin
   //ES Documentation sample (https://www.elastic.co/guide/en/apm/server/current/example-intakev2-events.html)
   //{ "transaction": { "trace_id": "01234567890123456789abcdefabcdef", "id": "abcdef1478523690", "type": "request", "duration": 32.592981, "timestamp": 1535655207154000, "result": "200", "context": null, "spans": null, "sampled": null, "span_count": { "started": 0 }}}
@@ -173,6 +175,12 @@ begin
   Result.TxResult := '200';
   Result.Timestamp := 1535655207154000;
   Result.SpanCount.Started := 0;
+
+  LSystem := TAPMSystem.Create;
+  LSystem.Architecture := 'x86';
+  LSystem.Hostname := 'hooded.claw';
+  LSystem.SystemPlatform := 'Windows';
+  Result.SetSystem(LSystem);
 end;
 
 class function TDefaultInstances.CreateDefaultAPMException: TAPMException;

@@ -50,6 +50,7 @@ type
     class function Get128BitHexString(AFourthInt32, AThirdInt32, ASecondInt32, AFirstInt32: Int32): String; overload;
     class function Get128BitHexString: String; overload;
     class function GetComputerName: String;
+    class function GetPlatformName: String;
   end;
 
   TStopWatch = class
@@ -156,7 +157,60 @@ begin
       FreeMem(LBuff);
     end;
   end;
+end;
 
+class function TAPMUtils.GetPlatformName: String;
+var
+  LVersionInfo: TOSVersionInfoEx;
+begin
+  Result := 'Windows';
+  if GetVersionEx(LVersionInfo) then
+  begin
+    if (10 = LVersionInfo.dwMajorVersion) and (0 = LVersionInfo.dwMinorVersion) and ( VER_NT_WORKSTATION = LVersionInfo.wProductType) then
+    begin
+      Result := 'Windows 10';
+    end
+    else if (10 = LVersionInfo.dwMajorVersion) and (0 = LVersionInfo.dwMinorVersion) and ( VER_NT_WORKSTATION <> LVersionInfo.wProductType) then
+    begin
+      Result := 'Windows Server 2016';
+    end
+    else if (6 = LVersionInfo.dwMajorVersion) and (3 = LVersionInfo.dwMinorVersion) and ( VER_NT_WORKSTATION = LVersionInfo.wProductType) then
+    begin
+      Result := 'Windows 8.1';
+    end
+    else if (6 = LVersionInfo.dwMajorVersion) and (3 = LVersionInfo.dwMinorVersion) and ( VER_NT_WORKSTATION <> LVersionInfo.wProductType) then
+    begin
+      Result := 'Windows Server 2012 R2';
+    end
+    else if (6 = LVersionInfo.dwMajorVersion) and (2 = LVersionInfo.dwMinorVersion) and ( VER_NT_WORKSTATION = LVersionInfo.wProductType) then
+    begin
+      Result := 'Windows 8';
+    end
+    else if (6 = LVersionInfo.dwMajorVersion) and (2 = LVersionInfo.dwMinorVersion) and ( VER_NT_WORKSTATION <> LVersionInfo.wProductType) then
+    begin
+      Result := 'Windows Server 2012';
+    end
+    else if (6 = LVersionInfo.dwMajorVersion) and (1 = LVersionInfo.dwMinorVersion) and ( VER_NT_WORKSTATION = LVersionInfo.wProductType) then
+    begin
+      Result := 'Windows 7';
+    end
+    else if (6 = LVersionInfo.dwMajorVersion) and (1 = LVersionInfo.dwMinorVersion) and ( VER_NT_WORKSTATION <> LVersionInfo.wProductType) then
+    begin
+      Result := 'Windows Server 2008 R2';
+    end
+    else if (6 = LVersionInfo.dwMajorVersion) and (0 = LVersionInfo.dwMinorVersion) and ( VER_NT_WORKSTATION = LVersionInfo.wProductType) then
+    begin
+      Result := 'Windows Vista';
+    end
+    else if (6 = LVersionInfo.dwMajorVersion) and (0 = LVersionInfo.dwMinorVersion) and ( VER_NT_WORKSTATION <> LVersionInfo.wProductType) then
+    begin
+      Result := 'Windows Server 2008';
+    end
+    else
+    begin
+      Result := String.Format('Windws %d.%d Build: %d', [LVersionInfo.dwMajorVersion, LVersionInfo.dwMinorVersion, LVersionInfo.dwBuildNumber]);
+    end;
+  end;
 end;
 {$ENDREGION}
 

@@ -672,7 +672,7 @@ begin
   else
     Result.Architecture := 'x86';
   Result.Hostname := TAPMUtils.GetComputerName;
-  Result.SystemPlatform := 'Windows';
+  Result.SystemPlatform := TAPMUtils.GetPlatformName;
 end;
 {$ENDREGION}
 

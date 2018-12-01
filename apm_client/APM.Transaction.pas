@@ -216,7 +216,6 @@ begin
   LTx.AddPair('duration', TJSONNumber.Create(FDuration));
   LTx.AddPair('timestamp', TJSONNumber.Create(FTimestamp));
   LTx.AddPair('result', FResult);
-  LTx.AddPair('context', TJSONNull.Create);
   LTx.AddPair('spans', TJSONNull.Create);
   if not FSampled then
     LTx.AddPair('sampled', TJSONBool.Create(FSampled))

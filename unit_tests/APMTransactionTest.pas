@@ -119,7 +119,6 @@ begin
       Assert.IsNotNull(LActual.Values['result']);
       Assert.AreEqual(LExpected.TxResult, LActual.Values['result'].Value);
 
-      Assert.AreEqual('null', LActual.Values['context'].Value);
       Assert.AreEqual('null', LActual.Values['spans'].Value);
       Assert.AreEqual('null', LActual.Values['sampled'].Value);
     finally
@@ -137,7 +136,7 @@ var
 begin
   LExpected := '{"trace_id":"01234567890123456789abcdefabcdef","id":"abcdef1478523690",' +
                '"type":"request","duration":32.592981,"timestamp":1535655207154000,' +
-               '"result":"200","context":null,"spans":null,"sampled":null,"span_count":{"started":0}}';
+               '"result":"200","spans":null,"sampled":null,"span_count":{"started":0},"context":{"system":{"architecture":"x86","hostname":"hooded.claw","platform":"Windows"}}}';
   LTransaction := TDefaultInstances.CreateDefaultAPMTransaction;
   try
     LActual := LTransaction.GetJSONString;
@@ -154,7 +153,7 @@ var
 begin
   LExpected := '{"transaction":{"trace_id":"01234567890123456789abcdefabcdef","id":"abcdef1478523690",' +
                '"type":"request","duration":32.592981,"timestamp":1535655207154000,' +
-               '"result":"200","context":null,"spans":null,"sampled":null,"span_count":{"started":0}}}';
+               '"result":"200","spans":null,"sampled":null,"span_count":{"started":0},"context":{"system":{"architecture":"x86","hostname":"hooded.claw","platform":"Windows"}}}}';
   LTransaction := TDefaultInstances.CreateDefaultAPMTransaction;
   try
     LActual := LTransaction.GetJSONString(TRUE);
