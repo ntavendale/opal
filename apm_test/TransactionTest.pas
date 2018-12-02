@@ -101,7 +101,7 @@ begin
   FMetadata.User.UserName := String.Format('%s\%s', [LDomain, LUser]);
 
   FTransaction.ID := 'B3CBAD6DA38E4C1D89238D550885FC75';
-  FTransaction.TraceID := '8D0A60147C904756A47145B219617350';
+  FTransaction.TraceID := GetTraceID;
   FTransaction.Duration := 125.6;
   FTransaction.TxResult := '200';
   FTransaction.TxType := 'request';

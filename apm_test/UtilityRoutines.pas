@@ -26,14 +26,19 @@ unit UtilityRoutines;
 interface
 
 uses
-  System.SysUtils, System.Classes, System.JSON, WinAPI.Windows, System.DateUtils;
+  System.SysUtils, System.Classes, System.JSON, WinAPI.Windows, System.DateUtils,
+  APM.Utils;
 
 function GetLoggedInUserName: String;
 function GetLoggedInDomain: String;
 function GetSID(var UserName, DomainName:String):String;
 function SIDToStr(Input:PSID):string;
+function GetTraceID:string;
 
 implementation
+
+var
+  FTraceID: String = String.Empty;
 
 function GetLoggedInUserName: String;
 var
@@ -174,6 +179,13 @@ begin
     Result:='NULL';
     raise Exception.Create ('Invalid Security ID Exception');
   end;
+end;
+
+function GetTraceID:string;
+begin
+  if String.IsNullOrWhiteSpace(FTraceID) then
+    FTraceID := TAPMUtils.Get128BitHexString;
+  Result := FTraceID;
 end;
 
 end.

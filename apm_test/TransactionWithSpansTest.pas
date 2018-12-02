@@ -46,7 +46,7 @@ implementation
 constructor TTransactionWithSpansTest.Create;
 begin
   FMetadata := TAPMMetadata.Create;
-  FTransaction := TAPMTransaction.NewTransaction(TAPMUtils.Get64BitHexString, TAPMUtils.Get128BitHexString, 'request');
+  FTransaction := TAPMTransaction.NewTransaction(TAPMUtils.Get64BitHexString, GetTraceID, 'request');
 end;
 
 destructor TTransactionWithSpansTest.Destroy;

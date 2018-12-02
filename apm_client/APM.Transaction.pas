@@ -31,6 +31,7 @@ uses
   APM.Utils, APM.Span, APM.Error, APM.Context;
 
 type
+  TAMPLoglevel = (llFatal, llError, llWarn);
   TSpanCount = class
   protected
     FStarted: Cardinal;
@@ -74,6 +75,7 @@ type
     function GetJSONObject(ARequestBodyFormat: Boolean = FALSE): TJSONObject;
     function GetJSONString(ARequestBodyFormat: Boolean = FALSE): String;
     procedure CaptureException(AException: Exception; AMethodName: String = String.Empty);
+    procedure CaptureErrorLog(ALevel: TAMPLoglevel; ALogMessage: String; AMethodName: String = String.Empty);
     procedure SetSystem(ASystem: TAPMSystem);
     class function NewTransaction(ATransactionID, ATraceID, AType: String): TAPMTransaction;
     property Duration: Double read FDuration write FDuration;
@@ -263,6 +265,29 @@ begin
   LErr.Exception.ExceptionMessage := AException.Message;
   LErr.Exception.ExceptionType := AException.ClassName;
   LErr.Exception.Handled := TRUE;
+  FErrors.Add(LErr);
+end;
+
+procedure TAPMTransaction.CaptureErrorLog(ALevel: TAMPLoglevel; ALogMessage: String; AMethodName: String = String.Empty);
+var
+  LErr: TAPMError;
+  LTrace: TStringList;
+begin
+  LErr := TAPMError.Create;
+  LErr.ID := TAPMUtils.Get64BitHexString;
+  LErr.TransactionID := Self.ID;
+  LErr.TraceID := Self.TraceID;
+  LErr.ParentID := Self.ID;
+  LErr.SetTimeStamp(Now);
+  LErr.Culprit := AMethodName;
+  case ALevel of
+    llFatal: LErr.Log.Level := 'FATAL';
+    llError: LErr.Log.Level := 'ERROR';
+    llWarn: LErr.Log.Level := 'WARN';
+  end;
+  LErr.Log.LoggerName := 'APM';
+  LErr.Log.LogMessage := ALogMessage;
+  LErr.Log.ParamMessage := '';
   FErrors.Add(LErr);
 end;
 
