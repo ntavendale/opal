@@ -44,6 +44,8 @@ echo Open fireall port 8200
 firewall-cmd --permanent --add-port=8200/tcp
 firewall-cmd --reload
 
+sed -i -e 's/  host: "localhost:8200"/  host: "'$1':8200"/g' /etc/apm-server/apm-server.yml
+
 echo Start apm-server daemon
 /bin/systemctl daemon-reload
 /bin/systemctl enable apm-server.service
