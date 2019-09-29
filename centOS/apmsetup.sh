@@ -1,4 +1,11 @@
 #!bin/bash
+if [ -z "$1" ]
+then
+  echo "No IP supplied"
+  exit 1
+fi
+
+echo Setup ES on  $1
 rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
 
 cat > $file_location <<EOF
