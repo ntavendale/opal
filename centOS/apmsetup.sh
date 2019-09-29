@@ -69,6 +69,8 @@ echo Open port 5601
 firewall-cmd --permanent --add-port=5601/tcp
 firewall-cmd --reload
 
+sed -i -e 's/#server.host: "localhost"/server.host: "'$1'"/g' /etc/kibana/kibana.yml
+
 echo start daemon
 /bin/systemctl daemon-reload
 /bin/systemctl enable kibana.service
