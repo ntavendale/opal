@@ -7,6 +7,9 @@ then
 fi
 
 echo Setup ES on  $1
+
+yum -y install  java
+
 rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
 
 cat > /etc/yum.repos.d/elasticsearch.repo <<EOF
