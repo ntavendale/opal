@@ -10,9 +10,9 @@ echo Setup ES on  $1
 rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
 
 cat > /etc/yum.repos.d/elasticsearch.repo <<EOF
-[elasticsearch-7.x]
-name=Elasticsearch repository for 7.x packages
-baseurl=https://artifacts.elastic.co/packages/7.x/yum
+[elasticsearch-6.x]
+name=Elasticsearch repository for 6.x packages
+baseurl=https://artifacts.elastic.co/packages/6.x/yum
 gpgcheck=1
 gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
 enabled=1
@@ -53,9 +53,9 @@ systemctl start apm-server.service
 
 echo Install kibana
 cat > /etc/yum.repos.d/kibana.repo <<EOF
-[kibana-7.x]
-name=Kibana repository for 7.x packages
-baseurl=https://artifacts.elastic.co/packages/7.x/yum
+[kibana-6.x]
+name=Kibana repository for 6.x packages
+baseurl=https://artifacts.elastic.co/packages/6.x/yum
 gpgcheck=1
 gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
 enabled=1
