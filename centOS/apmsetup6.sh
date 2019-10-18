@@ -79,4 +79,4 @@ echo start daemon
 /bin/systemctl enable kibana.service
 /bin/systemctl start kibana.service
 
-/usr/bin/apm-server setup -E setup.kibana.host='$1':5601
+/usr/bin/apm-server setup -E setup.kibana.host=$1:5601
