@@ -1,0 +1,41 @@
+In a minimal install you won't have things like if tools or git.
+You will need to install them.
+
+To install net-tools (which has the ifconfig utility):
+
+sudo yum -y install net-tools
+
+To install the git client:
+
+sudo -y install git
+
+After that clone the opal repository with the following command:
+
+git clone https://github.com/ntavendale/opal
+
+After this navigate to the centOS folder:
+
+cd ./opal/centOS
+
+Version 6 Install
+=================
+
+To install Elasicsearch, Kibana and APM do the following:
+
+sudo ./apmsetup6.sh <IPAddress>
+
+To install only Elasticseach and Kibana:
+
+sudo ./esKibanaSetup6.sh <IPAddress>
+
+Version 7 Install
+=================
+
+To install Elasicsearch, Kibanan and APM do the following:
+
+sudo ./apmsetup7.sh <IPAddress>
+
+To install only Elasticsearch and Kibana:
+
+sudo ./esKibanaSetup7.sh
+
