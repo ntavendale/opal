@@ -32,10 +32,14 @@ uses
 type
   TTransactionTest = class
   protected
+    FEndpoint: String;
+    FPort: WORD;
+    FServiceName: String;
     FMetadata: TAPMMetadata;
     FTransaction: TAPMTransaction;
+    FTraceID: String;
   public
-    constructor Create;
+    constructor Create(AEndpoint: String; APort: WORD; AServiceName: String; ATraceID: String);
     destructor Destroy; override;
     procedure Load;
     function Send: String;
@@ -43,10 +47,14 @@ type
 
 implementation
 
-constructor TTransactionTest.Create;
+constructor TTransactionTest.Create(AEndpoint: String; APort: WORD; AServiceName: String; ATraceID: String);
 begin
+  FEndpoint := AEndpoint;
+  FServiceName := AServiceName;
+  FPort := APort;
   FMetadata := TAPMMetadata.Create;
   FTransaction := TAPMTransaction.Create;
+  FTransaction.TraceID := ATraceID;
 end;
 
 destructor TTransactionTest.Destroy;
@@ -62,7 +70,7 @@ var
   LDomain, LUser: String;
 begin
   FMetadata.AddService;
-  FMetadata.Service.Name := 'Delphi Client Test Service';
+  FMetadata.Service.Name := FServiceName;
   FMetadata.Service.AgentName := 'Delphi';
   FMetadata.Service.AgentVersion := '1.0';
   FMetadata.Service.LanguageName := 'Delphi';
@@ -102,9 +110,10 @@ begin
 
   FTransaction.ID := 'B3CBAD6DA38E4C1D89238D550885FC75';
   FTransaction.TraceID := GetTraceID;
-  FTransaction.Duration := 125.6;
+  FTransaction.Name := 'POST';
+  FTransaction.Duration := 300.6;
   FTransaction.TxResult := '200';
-  FTransaction.TxType := 'request';
+  FTransaction.TxType := 'POST';
   FTransaction.Sampled := FALSE;
   FTransaction.Timestamp := DateTimeToUnix(TTimeZone.Local.ToUniversalTime(Now), TRUE) * 1000000;
 end;
@@ -115,7 +124,7 @@ var
   LIndexDetail: TStringList;
 begin
   Result := '';
-  LEndpoint := TEndpointClient.Create('http://192.168.116.138', 8200, String.Empty,String.Empty, 'intake/v2/events');
+  LEndpoint := TEndpointClient.Create(FEndpoint, FPort, String.Empty,String.Empty, 'intake/v2/events');
   try
     LIndexDetail := TStringList.Create;
     try

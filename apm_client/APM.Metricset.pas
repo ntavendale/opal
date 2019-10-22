@@ -26,7 +26,8 @@ unit APM.Metricset;
 interface
 
 uses
-  System.SysUtils, System.Classes, System.JSON, System.Generics.Collections;
+  System.SysUtils, System.DateUtils, System.Classes, System.JSON,
+  System.Generics.Collections;
 
 type
   TMetricSample = class
@@ -56,6 +57,7 @@ type
     procedure Clear;
     function GetJSONObject(ARequestBodyFormat: Boolean = FALSE): TJSONObject;
     function GetJSONString(ARequestBodyFormat: Boolean = FALSE): String;
+    procedure SetTimeStamp(ADateTime: TDateTime; AIsUTC: Boolean = FALSE);
     property Count: Integer read GetCount;
     property TimeStamp: Int64 read FTimestamp write FTimestamp;
     property MetricSample[AIndex: Integer]: TMetricSample read GetListItem write SetListItem; default;
@@ -165,6 +167,11 @@ begin
   finally
     LObj.Free;
   end;
+end;
+
+procedure TAPMMetricset.SetTimeStamp(ADateTime: TDateTime; AIsUTC: Boolean = FALSE);
+begin
+  FTimestamp := DateTimeToUnix(ADateTime, AIsUTC) * 1000000;
 end;
 {$ENDREGION}
 

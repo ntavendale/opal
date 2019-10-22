@@ -27,15 +27,21 @@ interface
 
 uses
   System.SysUtils, System.Classes, System.JSON, WinAPI.Windows, System.DateUtils,
-  APM.MetaData, APM.Transaction, APM.Span, APM.Utils, APM.Error, UtilityRoutines, EndpointClient;
+  APM.MetaData, APM.Metricset, APM.Transaction, APM.Span, APM.Utils, APM.Error,
+  UtilityRoutines, EndpointClient;
 
 type
   TTransactionWithSpansTest = class
   protected
+    FEndpoint: String;
+    FURLList: TStrings;
+    FPort: WORD;
+    FServiceName: String;
+    FAgentName: String;
     FMetadata: TAPMMetadata;
     FTransaction: TAPMTransaction;
   public
-    constructor Create;
+    constructor Create(AEndpoint: String; APort: WORD; AServiceName: String; AURLList: TArray<String>; ATraceID: String; AAgentName: String);
     destructor Destroy; override;
     procedure Load;
     function Send: String;
@@ -43,14 +49,24 @@ type
 
 implementation
 
-constructor TTransactionWithSpansTest.Create;
+constructor TTransactionWithSpansTest.Create(AEndpoint: String; APort: WORD; AServiceName: String; AURLList: TArray<String>; ATraceID: String; AAgentName: String);
+var
+  i: Integer;
 begin
+  FEndpoint := AEndpoint;
+  FPort := APort;
+  FServiceName := AServiceName;
+  FAgentName := AAgentName;
   FMetadata := TAPMMetadata.Create;
-  FTransaction := TAPMTransaction.NewTransaction(TAPMUtils.Get64BitHexString, GetTraceID, 'request');
+  FTransaction := TAPMTransaction.NewTransaction(TAPMUtils.Get64BitHexString, ATraceID, 'request');
+  FURLList := TStringList.Create;
+  for i := 0 to (Length(AURLList) - 1) do
+    FURLList.Add(AURLList[i]);
 end;
 
 destructor TTransactionWithSpansTest.Destroy;
 begin
+  FURLList.Free;
   FTransaction.Free;
   FMetadata.Free;
   inherited Destroy;
@@ -66,10 +82,10 @@ var
   LEndpoint: TEndpointClient;
 begin
   FMetadata.AddService;
-  FMetadata.Service.Name := 'Delphi Client Test Service';
-  FMetadata.Service.AgentName := 'Delphi';
+  FMetadata.Service.Name := FServiceName;
+  FMetadata.Service.AgentName := FAgentName;
   FMetadata.Service.AgentVersion := '1.0';
-  FMetadata.Service.LanguageName := 'Delphi';
+  FMetadata.Service.LanguageName := 'Never Mind';
   {$IFDEF VER150}FMetadata.Service.LanguageVersion := 'Delphi 7';{$ENDIF}
   {$IFDEF VER160}FMetadata.Service.LanguageVersion := 'Delphi 8';{$ENDIF}
   {$IFDEF VER170}FMetadata.Service.LanguageVersion := 'Delphi 2005';{$ENDIF}
@@ -87,14 +103,14 @@ begin
   {$IFDEF VER270}FMetadata.Service.LanguageVersion := 'Delphi XE6';{$ENDIF}
   {$IFDEF VER280}FMetadata.Service.LanguageVersion := 'Delphi XE7';{$ENDIF}
   {$IFDEF VER290}FMetadata.Service.LanguageVersion := 'Delphi XE8';{$ENDIF}
-  {$IFDEF VER300}FMetadata.Service.LanguageVersion := 'Delphi 10 Seattle';{$ENDIF}
-  {$IFDEF VER310}FMetadata.Service.LanguageVersion := 'Delphi 10.1 Berlin';{$ENDIF}
-  {$IFDEF VER320}FMetadata.Service.LanguageVersion := 'Delphi 10.2 Tokyo';{$ENDIF}
-  {$IFDEF VER330}FMetadata.Service.LanguageVersion := 'Delphi 10.3 Rio';{$ENDIF}
+  {$IFDEF VER300}FMetadata.Service.LanguageVersion := 'Seattle';{$ENDIF}
+  {$IFDEF VER310}FMetadata.Service.LanguageVersion := 'Berlin';{$ENDIF}
+  {$IFDEF VER320}FMetadata.Service.LanguageVersion := 'Tokyo';{$ENDIF}
+  {$IFDEF VER330}FMetadata.Service.LanguageVersion := 'Rio';{$ENDIF}
   FMetadata.AddProcess;
   FMetadata.Process.ProcessID := GetCurrentProcessID;
   FMetadata.Process.ParentProcessID := 0;
-  FMetadata.Process.Title := 'APMTest';
+  FMetadata.Process.Title := FAgentName + '_Process';
   for i := 1 to ParamCount do
     FMetadata.Process.ArgV.Add(ParamStr(i));
 
@@ -110,93 +126,37 @@ begin
   FMetadata.System.SystemPlatform := 'Windows';
 
   FTransaction.BeginTransaction;
-
-  LSpan := FTransaction.AddSpan;
-  LSpan.ID := TAPMUtils.Get64BitHexString;;
-  LSpan.TransactionID := FTransaction.ID;
-  LSpan.ParentID := FTransaction.ID;
-  LSpan.TraceID := FTransaction.TraceID;
-  LSpan.Parent := 1;
-  LSpan.Name := 'GET /';
-  LSpan.SpanType := 'request';
-  LSpan.Start := FTransaction.CurrentOffsetMsec;
-  LSpan.Context.httpContext.URL := 'http://www.amazon.com';
-  LSpan.Context.httpContext.Method := 'GET';
-  LSpan.BeginSpan;
-  LEndpoint := TEndpointClient.Create(LSpan.Context.httpContext.URL, 80, String.Empty, String.Empty.Empty, String.Empty.Empty);
-  try
+  for i := 0 to (FURLList.Count - 1) do
+  begin
+    LSpan := FTransaction.AddSpan;
+    LSpan.ID := TAPMUtils.Get64BitHexString;;
+    LSpan.TransactionID := FTransaction.ID;
+    LSpan.ParentID := FTransaction.ID;
+    LSpan.TraceID := FTransaction.TraceID;
+    LSpan.Parent := 0;
+    LSpan.Name := 'GET /';
+    LSpan.SpanType := 'http request';
+    LSpan.Start := FTransaction.CurrentOffsetMsec;
+    LSpan.Context.httpContext.URL := FURLList[i];
+    LSpan.Context.httpContext.Method := 'GET';
+    LSpan.BeginSpan;
+    LEndpoint := TEndpointClient.Create(LSpan.Context.httpContext.URL, 80, String.Empty, String.Empty.Empty, String.Empty.Empty);
     try
-      LEndpoint.Get;
-      LSpan.Context.httpContext.StatusCode := LEndpoint.StatusCode;
-    except
-      on E:Exception do
-      begin
+      try
+        LEndpoint.Get;
         LSpan.Context.httpContext.StatusCode := LEndpoint.StatusCode;
-        FTransaction.CaptureException(E, MethodName );
+      except
+        on E:Exception do
+        begin
+          LSpan.Context.httpContext.StatusCode := LEndpoint.StatusCode;
+          FTransaction.CaptureException(E, MethodName, LEndpoint.StatusCode.ToString );
+        end;
       end;
+    finally
+      LEndpoint.Free;
     end;
-  finally
-    LEndpoint.Free;
+    LSpan.EndSpan;
   end;
-  LSpan.EndSpan;
-
-  LSpan := FTransaction.AddSpan;
-  LSpan.ID := TAPMUtils.Get64BitHexString;;
-  LSpan.TransactionID := FTransaction.ID;
-  LSpan.ParentID := FTransaction.ID;
-  LSpan.TraceID := FTransaction.TraceID;
-  LSpan.Parent := 1;
-  LSpan.Name := 'GET /';
-  LSpan.SpanType := 'request';
-  LSpan.Start := FTransaction.CurrentOffsetMsec;
-  LSpan.Context.httpContext.URL := 'http://www.yahoo.com';
-  LSpan.Context.httpContext.Method := 'GET';
-  LSpan.BeginSpan;
-  LEndpoint := TEndpointClient.Create(LSpan.Context.httpContext.URL, 80, String.Empty, String.Empty, String.Empty.Empty);
-  try
-    try
-      LEndpoint.Get;
-      LSpan.Context.httpContext.StatusCode := LEndpoint.StatusCode;
-    except
-      on E:Exception do
-      begin
-        LSpan.Context.httpContext.StatusCode := LEndpoint.StatusCode;
-        FTransaction.CaptureException(E, MethodName);
-      end;
-    end;
-  finally
-    LEndpoint.Free;
-  end;
-  LSpan.EndSpan;
-
-  LSpan := FTransaction.AddSpan;
-  LSpan.ID := TAPMUtils.Get64BitHexString;;
-  LSpan.TransactionID := FTransaction.ID;
-  LSpan.ParentID := FTransaction.ID;
-  LSpan.TraceID := FTransaction.TraceID;
-  LSpan.Parent := 1;
-  LSpan.Name := 'GET /';
-  LSpan.SpanType := 'request';
-  LSpan.Start := FTransaction.CurrentOffsetMsec;
-  LSpan.Context.httpContext.URL := 'http://127.0.0.1';
-  LSpan.Context.httpContext.Method := 'GET';
-  LSpan.BeginSpan;
-  LEndpoint := TEndpointClient.Create(LSpan.Context.httpContext.URL, 80, String.Empty, String.Empty, String.Empty.Empty);
-  try
-    try
-      LEndpoint.Get;
-      LSpan.Context.httpContext.StatusCode := LEndpoint.StatusCode;
-    except
-      on E:Exception do
-      begin
-        LSpan.Context.httpContext.StatusCode := LEndpoint.StatusCode;
-        FTransaction.CaptureException(E, MethodName);
-      end;
-    end;
-  finally
-    LEndpoint.Free;
-  end;
-  LSpan.EndSpan;
 
   FTransaction.EndTransaction;
   FTransaction.Sampled := (FTransaction.Spans.Count > 0);
@@ -211,19 +171,31 @@ var
   LEndpoint: TEndpointClient;
   LIndexDetail: TStringList;
   i: Integer;
+  LMetrics: TAPMMetricset;
+  LMetricSet: String;
 begin
+  LMetrics := TAPMMetricset.Create;
+  try
+    LMetrics.Add( TMetricSample.Create('cpu', 17.6) );
+    LMetrics.Add( TMetricSample.Create('memory', (12 * 1024 * 1024)) );
+    LMetrics.SetTimeStamp(Now);
+    LMetricSet := LMetrics.GetJSONString(TRUE);
+  finally
+    LMetrics.Free;
+  end;
+
   Result := '';
-  LEndpoint := TEndpointClient.Create('http://192.168.116.138', 8200, String.Empty,String.Empty, 'intake/v2/events');
+  LEndpoint := TEndpointClient.Create(FEndpoint, FPort, String.Empty,String.Empty, 'intake/v2/events');
   try
     LIndexDetail := TStringList.Create;
     try
       LIndexDetail.Add(FMetadata.GetJsonString(TRUE));
-      LIndexDetail.Add(FTransaction.GetJSONString(TRUE));
       for i := 0 to (FTransaction.Spans.Count - 1) do
         LIndexDetail.Add(FTransaction.Spans[i].GetJSONString(TRUE));
       for i := 0 to (FTransaction.Errors.Count - 1) do
         LIndexDetail.Add(FTransaction.Errors[i].GetJSONString(TRUE));
-
+      LIndexDetail.Add(FTransaction.GetJSONString(TRUE));
+      LIndexDetail.Add(LMetricSet);
       try
         LEndpoint.PostContentType(LIndexDetail.Text, 'application/x-ndjson');
         Result := LEndpoint.StatusText + #13#10 + LIndexDetail.Text;

@@ -540,13 +540,13 @@ end;
 function TAPMService.GetJSONObject: TJSONObject;
 begin
   Result := TJSONObject.Create;
+  Result.AddPair('name', FName);
   if nil <> FAgent then
     Result.AddPair('agent', FAgent.GetJSONObject);
   if nil <> FFramework then
     Result.AddPair('framework', FFramework.GetJSONObject);
   if nil <> FLanguage then
     Result.AddPair('language', FLanguage.GetJSONObject);
-  Result.AddPair('name', FName);
   Result.AddPair('environment', FEnvironment);
   if nil <> FRuntime then
     Result.AddPair('runtime', FRuntime.GetJSONObject);
@@ -600,7 +600,8 @@ var
 begin
   Result := TJSONObject.Create;
   Result.AddPair('pid', TJsonNumber.Create(FProcessID));
-  Result.AddPair('ppid', TJsonNumber.Create(FParentProcessID));
+  if FParentProcessID > 0 then
+    Result.AddPair('ppid', TJsonNumber.Create(FParentProcessID));
   Result.AddPair('title', FTitle);
   LArgVArray := TJSONArray.Create;
   for LArg in FArgV do

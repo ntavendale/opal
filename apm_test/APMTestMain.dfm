@@ -3,7 +3,7 @@ object fmAPMTestMain: TfmAPMTestMain
   Top = 366
   Caption = 'APM Test Project'
   ClientHeight = 649
-  ClientWidth = 1024
+  ClientWidth = 1007
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -23,13 +23,11 @@ object fmAPMTestMain: TfmAPMTestMain
     TabOrder = 0
     OnClick = btnTestTxClick
   end
-  object memMain: TMemo
-    Left = 96
-    Top = 112
-    Width = 585
-    Height = 273
-    Lines.Strings = (
-      'memMain')
+  object memGenerated: TMemo
+    Left = 40
+    Top = 88
+    Width = 825
+    Height = 233
     ScrollBars = ssBoth
     TabOrder = 1
     WordWrap = False
@@ -42,5 +40,29 @@ object fmAPMTestMain: TfmAPMTestMain
     Caption = 'Test Spans'
     TabOrder = 2
     OnClick = btnSpansClick
+  end
+  object memPost: TMemo
+    Left = 40
+    Top = 360
+    Width = 825
+    Height = 233
+    ScrollBars = ssBoth
+    TabOrder = 3
+    WordWrap = False
+  end
+  object btnPost: TButton
+    Left = 888
+    Top = 368
+    Width = 75
+    Height = 25
+    Caption = 'Post'
+    TabOrder = 4
+    OnClick = btnPostClick
+  end
+  object odURLs: TOpenDialog
+    DefaultExt = 'txt'
+    Filter = 'Text Files (*.txt)|*.txt|All Files (*.*)|*.*'
+    Left = 368
+    Top = 48
   end
 end

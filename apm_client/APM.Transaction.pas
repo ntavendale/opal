@@ -74,7 +74,7 @@ type
     procedure SetTimeStamp(ADateTime: TDateTime; AIsUTC: Boolean = FALSE);
     function GetJSONObject(ARequestBodyFormat: Boolean = FALSE): TJSONObject;
     function GetJSONString(ARequestBodyFormat: Boolean = FALSE): String;
-    procedure CaptureException(AException: Exception; AMethodName: String = String.Empty);
+    procedure CaptureException(AException: Exception; AMethodName: String = String.Empty; AExceptionCode: String = String.Empty);
     procedure CaptureErrorLog(ALevel: TAMPLoglevel; ALogMessage: String; AMethodName: String = String.Empty);
     procedure SetSystem(ASystem: TAPMSystem);
     class function NewTransaction(ATransactionID, ATraceID, AType: String): TAPMTransaction;
@@ -249,7 +249,7 @@ begin
   end;
 end;
 
-procedure TAPMTransaction.CaptureException(AException: Exception; AMethodName: String = String.Empty);
+procedure TAPMTransaction.CaptureException(AException: Exception; AMethodName: String = String.Empty; AExceptionCode: String = String.Empty);
 var
   LErr: TAPMError;
   LTrace: TStringList;
@@ -260,8 +260,9 @@ begin
   LErr.TraceID := Self.TraceID;
   LErr.ParentID := Self.ID;
   LErr.SetTimeStamp(Now);
+  LErr.GroupingKey := AExceptionCode;
   LErr.Culprit := AMethodName;
-  LErr.Exception.Code := '0';
+  LErr.Exception.Code := AExceptionCode;
   LErr.Exception.ExceptionMessage := AException.Message;
   LErr.Exception.ExceptionType := AException.ClassName;
   LErr.Exception.Handled := TRUE;

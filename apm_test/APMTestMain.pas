@@ -28,19 +28,30 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  TransactionTest, TransactionWithSpansTest;
+  TransactionTest, TransactionWithSpansTest, IdSSLOpenSSLHeaders,
+  UtilityRoutines, EndpointClient;
+
+const
+  TEST_HOST = 'http://192.168.116.120';
+  TEST_PORT = 8200;
 
 type
   TfmAPMTestMain = class(TForm)
     btnTestTx: TButton;
-    memMain: TMemo;
+    memGenerated: TMemo;
     btnSpans: TButton;
+    odURLs: TOpenDialog;
+    memPost: TMemo;
+    btnPost: TButton;
     procedure btnTestTxClick(Sender: TObject);
     procedure btnSpansClick(Sender: TObject);
+    procedure btnPostClick(Sender: TObject);
   private
     { Private declarations }
+    FTraceID: String;
   public
     { Public declarations }
+    constructor Create(AOwner: TComponent); override;
   end;
 
 var
@@ -50,14 +61,29 @@ implementation
 
 {$R *.dfm}
 
+constructor TfmAPMTestMain.Create(AOwner: TComponent);
+var
+  LPath, LeayLib, LsslLib: String;
+begin
+  inherited Create(AOwner);
+  FTraceID := GetTraceID;
+  LPath := ExcludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0)));
+  LeayLib := String.Format('%s\libeay32.dll', [LPath]);
+  LsslLib := String.Format('%s\ssleay32.dll', [LPath]);
+  if FileExists( LeayLib ) and FileExists( LsslLib ) then
+    IdOpenSSLSetLibPath(LPath);
+end;
+
+
 procedure TfmAPMTestMain.btnTestTxClick(Sender: TObject);
 var
   LTest: TTransactionTest;
 begin
-  LTest := TTransactionTest.Create;
+  memGenerated.Lines.Clear;
+  LTest := TTransactionTest.Create(TEST_HOST, TEST_PORT, 'My TX Test Service', FTraceID);
   try
     LTest.Load;
-    memMain.Text := LTest.Send;
+    memGenerated.Text := LTest.Send;
   finally
     LTest.Free;
   end;
@@ -66,13 +92,52 @@ end;
 procedure TfmAPMTestMain.btnSpansClick(Sender: TObject);
 var
   LTest: TTransactionWithSpansTest;
+  LURLFileContents, LURLList: TStrings;
+  i: Integer;
 begin
-  LTest := TTransactionWithSpansTest.Create;
+  memGenerated.Lines.Clear;
+  Screen.Cursor := crHourglass;
   try
-    LTest.Load;
-    memMain.Text := LTest.Send;
+    if not odURLs.Execute then
+      EXIT;
+
+    LURLFileContents := TStringList.Create;
+    try
+      LURLFileContents.LoadFromFile(odURLs.FileName);
+      for i := 0 to (LURLFileContents.Count - 1) do
+      begin
+        LTest := TTransactionWithSpansTest.Create(TEST_HOST, TEST_PORT, 'Test Span Service', LURLFileContents[i].Split([',']), FTraceID, String.Format('TX_Agent_%2d', [i]) );
+        try
+          LTest.Load;
+          memGenerated.Text := memGenerated.Text + #13#10 + LTest.Send;
+        finally
+          LTest.Free;
+        end;
+        Sleep(5000);
+      end;
+    finally
+      LURLFileContents.Free;
+    end;
   finally
-    LTest.Free;
+    Screen.Cursor := crDefault;
+  end;
+end;
+
+procedure TfmAPMTestMain.btnPostClick(Sender: TObject);
+var
+  LEndpoint: TEndpointClient;
+  LIndexDetail: TStringList;
+  i: Integer;
+begin
+  LEndpoint := TEndpointClient.Create(TEST_HOST, TEST_PORT, String.Empty,String.Empty, 'intake/v2/events');
+  try
+    try
+      LEndpoint.PostContentType(memPost.Lines.Text, 'application/x-ndjson');
+    except
+    end;
+    memPost.Lines.Add(LEndpoint.StatusText);
+  finally
+    LEndpoint.Free;
   end;
 end;
 

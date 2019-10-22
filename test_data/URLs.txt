@@ -1,0 +1,3 @@
+http://www.amazon.com,http://www.allthingssyslog.com,http://127.0.0.1
+http://www.google.com,http://www.elastic.co,http://www.elasticexplorer.com
+http://www.yahoo.com,http://www.microsoft.com,http://www.mozilla.org

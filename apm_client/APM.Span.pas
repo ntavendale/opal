@@ -26,8 +26,8 @@ unit APM.Span;
 interface
 
 uses
-  System.SysUtils, System.Classes, System.JSON, System.Generics.Collections,
-  APM.Utils, APM.Context;
+  System.SysUtils, System.Classes, System.JSON, System.DateUtils,
+  System.Generics.Collections, APM.Utils, APM.Context;
 
 //Documentation: https://www.elastic.co/guide/en/apm/server/6.5/span-api.html
 //Example: https://www.elastic.co/guide/en/apm/server/current/example-intakev2-events.html
@@ -94,6 +94,7 @@ type
     FStackTrace: TList<String>;
     FContext: TAPMContext;
     FStopwatch: TStopwatch;
+    FTimeStamp: Int64;
   public
     constructor Create; overload;
     constructor Create(AAPMSpan: TAPMSpan); overload;
@@ -102,6 +103,7 @@ type
     procedure EndSpan;
     function GetJSONObject(ARequestBodyFormat: Boolean = FALSE): TJSONObject;
     function GetJSONString(ARequestBodyFormat: Boolean = FALSE): String;
+    procedure SetTimeStamp(ADateTime: TDateTime; AIsUTC: Boolean = FALSE);
     property ID: String read FID write FID;
     property TraceID: String read FTraceID write FTraceID;
     property TransactionID: String read FTransactionID write FTransactionID;
@@ -111,6 +113,7 @@ type
     property SpanType: String read FType write FType;
     property Start: Double read FStart write FStart;
     property Duration: Double read FDuration write FDuration;
+    property TimeStamp: Int64 read FTimeStamp write FTimeStamp;
     property StackTrace: TList<String> read FStackTrace;
     property Context: TAPMContext read FContext;
   end;
@@ -263,6 +266,7 @@ begin
   FType := String.Empty;
   FStart := 0.00;
   FDuration := 0.00;
+  FTimeStamp := 0;
   FStackTrace := TList<String>.Create;
   FContext := TAPMContext.Create;
   FStopwatch := TStopwatch.Create;
@@ -281,6 +285,7 @@ begin
   FType := AAPMSpan.SpanType;
   FStart := AAPMSpan.Start;
   FDuration := AAPMSpan.Duration;
+  FTimeStamp := AAPMSpan.TimeStamp;
   FStackTrace := TList<String>.Create;
   for i := 0 to (AAPMSpan.StackTrace.Count - 1) do
     FStackTrace.Add(AAPMSpan.StackTrace[i]);
@@ -345,6 +350,11 @@ begin
   finally
     LObj.Free;
   end;
+end;
+
+procedure TAPMSpan.SetTimeStamp(ADateTime: TDateTime; AIsUTC: Boolean = FALSE);
+begin
+  FTimestamp := DateTimeToUnix(ADateTime, AIsUTC) * 1000000;
 end;
 {$ENDREGION}
 
