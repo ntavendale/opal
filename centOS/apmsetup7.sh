@@ -75,3 +75,7 @@ echo start daemon
 /bin/systemctl daemon-reload
 /bin/systemctl enable kibana.service
 /bin/systemctl start kibana.service
+
+# If the step below errors out you may need to run it manually with the IP 
+# don't forgert to use sudo 
+/usr/bin/apm-server setup -E setup.kibana.host=$1:5601
