@@ -260,7 +260,6 @@ begin
   LErr.TraceID := Self.TraceID;
   LErr.ParentID := Self.ID;
   LErr.SetTimeStamp(Now);
-  LErr.GroupingKey := AExceptionCode;
   LErr.Culprit := AMethodName;
   LErr.Exception.Code := AExceptionCode;
   LErr.Exception.ExceptionMessage := AException.Message;

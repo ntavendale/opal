@@ -86,7 +86,6 @@ type
     FTransactionID: String;
     FParentID: String;
     FCulprit: String;
-    FGroupingKey: String;
     FException: TAPMException;
     FLog: TAPMLog;
   public
@@ -103,7 +102,6 @@ type
     property ParentID: String read FParentID write FParentID;
     property Culprit: String read FCulprit write FCulprit;
     property Exception: TAPMException read FException;
-    property GroupingKey: String read FGroupingKey write FGroupingKey;
     property Log: TAPMLog read FLog;
   end;
 
@@ -307,9 +305,6 @@ begin
   LErrorObj.AddPair('transaction_id', FTransactionID);
   LErrorObj.AddPair('parent_id', FParentID);
   LErrorObj.AddPair('culprit', FCulprit);
-  if not String.IsNullOrWhiteSpace(FGroupingKey) then
-    LErrorObj.AddPair('grouping_key', FGroupingKey);
-
   if (not String.IsNullOrWhitespace(FException.ExceptionType)) or (not String.IsNullOrWhitespace(FException.ExceptionMessage)) then
   begin
     LErrorObj.AddPair('exception', FException.GetJSONObject);

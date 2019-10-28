@@ -32,7 +32,7 @@ uses
   UtilityRoutines, EndpointClient;
 
 const
-  TEST_HOST = 'http://192.168.116.120';
+  TEST_HOST = 'http://192.168.85.122';
   TEST_PORT = 8200;
 
 type
@@ -106,7 +106,7 @@ begin
       LURLFileContents.LoadFromFile(odURLs.FileName);
       for i := 0 to (LURLFileContents.Count - 1) do
       begin
-        LTest := TTransactionWithSpansTest.Create(TEST_HOST, TEST_PORT, 'Test Span Service', LURLFileContents[i].Split([',']), FTraceID, String.Format('TX_Agent_%2d', [i]) );
+        LTest := TTransactionWithSpansTest.Create(TEST_HOST, TEST_PORT, 'Second Test Span Service', LURLFileContents[i].Split([',']), FTraceID, String.Format('TX_Agent_%2d', [i]) );
         try
           LTest.Load;
           memGenerated.Text := memGenerated.Text + #13#10 + LTest.Send;

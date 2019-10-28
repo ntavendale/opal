@@ -112,7 +112,7 @@ begin
   FTransaction.TraceID := GetTraceID;
   FTransaction.Name := 'POST';
   FTransaction.Duration := 300.6;
-  FTransaction.TxResult := '200';
+  FTransaction.TxResult := 'POST 200';
   FTransaction.TxType := 'POST';
   FTransaction.Sampled := FALSE;
   FTransaction.Timestamp := DateTimeToUnix(TTimeZone.Local.ToUniversalTime(Now), TRUE) * 1000000;

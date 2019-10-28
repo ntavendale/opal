@@ -1,6 +1,6 @@
 object fmAPMTestMain: TfmAPMTestMain
-  Left = 709
-  Top = 366
+  Left = 300
+  Top = 121
   Caption = 'APM Test Project'
   ClientHeight = 649
   ClientWidth = 1007
